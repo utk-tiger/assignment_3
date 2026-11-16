@@ -1,0 +1,47 @@
+Stack AI Rewire — Data Science
+
+Assignment 3 — AI Native – Data Discovery
+
+Overview
+Run and critically verify an AI-assisted, multi-agent data-discovery workflow: locating, cataloguing, and assessing the feasibility of internal and external data sources for a business problem before any pipeline is built. You will steer a multi-agent pipeline (plan, scout, profile, assess, memo), parse metadata into structured records, encode deterministic feasibility rules and calibrated agent judgement, catch discovery-time traps, execute gate decisions and sign-offs, and package your learnings into a reusable skill file.
+
+Use cases covered
+Multi-Agent Pipeline Execution & Steering. Run and steer a multi-agent data discovery system (Plan, Scout, Profile, Risk Assessor, Memo Writer) while auditing agent execution traces and conversation transcripts.
+Metadata Extraction & Format Parsing. Build deterministic tool extractors for licensing (schema.org JSON-LD, links, text) and complex domain formats (JSON-stat summaries).
+Feasibility Rules & Risk Calibration. Encode deterministic feasibility rules (window coverage, staleness, grain mismatches) and calibrate LLM risk assessor rules against discovery traps.
+Host Allowlisting & Agent Debugging (G7). Enforce strict host allowlists, identify root-cause agent failures in traces, and implement prompt, tool, or validator fixes with before/after evidence.
+Human-in-the-Loop Gate Decisions & Sign-off. Manage candidate gate reviews, evaluate external source suggestions, review feasibility memos, and record formal sign-off decisions with traced evidence.
+Skill File Extension & Reuse Verification. Extend the reusable data-discovery skill file for end-to-end execution and verify its performance on new, unseen use cases.
+Expected outcome
+A complete data discovery system with closed core gaps (G1–G7), execution artifacts and traces for two business use cases (UC1 & UC2), gate and sign-off decision logs, memo review reports, an extended reusable skill file, passing test suites, and submission evidence.
+
+Submission Guidelines & Packaging Rules: Submit your completed assignment through the Submission Form section available in the respective Tiger Academy (LMS) Learning Path as a single zip archive named: empid_emp_name_data_discovery.zip.
+The total submission size must not exceed 20 MB.
+Strict Exclusions: Clean up the submission folder by removing unnecessary, temporary, secret, or intermediate files (.env, .venv, .cache, __pycache__, .pytest_cache, .git).
+Include only the files and folders explicitly mentioned in the submission guidelines.
+Verify the folder contents, self-check passing status, and total file size before submission.
+Supporting Learning Materials
+Supporting learning materials are available in Tiger Academy to help you complete this assignment.
+
+How to begin
+Complete the setup instructions in the learning path Installation Guide section.
+Open Tiger OS and enter the prompt (refer to the Prompt to enter in Tiger OS section below).
+Review the problem description, workflow and skill files presented in Tiger OS.
+Download the assignment bundle, which contains the complete assignment kit.
+Read the assignment document and helper guide in the bundle, then follow the workflow to complete the tasks.
+Implement gaps G1–G7, run and validate UC1 and UC2 workflows, verify gate decisions and sign-offs, extend the skill file, and prepare the required submission zip file.
+Submit the completed assignment in the Tiger Academy (LMS) following the submission instructions in the assignment kit.
+Start Your Assignment in Tiger OS
+Tiger OS is the starting point for this assignment. Use the prompt below in Tiger OS to access the problem description, workflow, associated skill files and complete downloadable assignment bundle.
+
+Open Tiger OS
+Prompt to enter in Tiger OS
+Start the Stack AI Rewire Data Science assignment “AI Native – Data Discovery.”
+
+Present the problem description, workflow and downloadable assignment bundle for a Multi-Agent Data Discovery project, displaying the description, workflow steps, and skill files associated with each workflow step, for an AI-assisted, agentic data discovery workflow using Python, Claude API, and pytest.
+
+Cover tool implementations (license extractor, JSON-stat summary), deterministic risk rules, risk assessor prompt calibration, strict allowlisting, trace-based agent error diagnosis (G7), human-in-the-loop candidate gate decisions, feasibility memo reviews, sign-off verification, and skill file extension with reuse testing.
+
+Provide the complete assignment kit through the download bundle, including the starter code, test suites, internal catalogs and wikis, use case specifications, templates, and evaluation rubric. Show only the currently associated reusable data-discovery-agent skill files.
+
+Next step: Paste the complete prompt above into Tiger OS, review the generated workflow and skill files, and download the assignment bundle.
