@@ -1,0 +1,149 @@
+{
+  "source_id": "api.open_meteo_archive",
+  "kind": "public_api",
+  "title": "Open-Meteo Historical Weather API (reanalysis archive)",
+  "summary": "Gridded historical weather API returning hourly and daily values (including daily maximum 2 m temperature, temperature_2m_max) for any latitude/longitude, sourced from ERA5 / ERA5-Land reanalysis and ECMWF IFS (9 km from 2017). The probe at 45.44N, 10.99E returned values for 2026-03-25 to 2026-03-31 in Europe/Rome local days, so the recent window is reachable; the free tier is documented as non-commercial only, which conflicts with the register's production approval for this shop.",
+  "schema": {
+    "documented": "structured",
+    "field_count": null,
+    "fields": [
+      {
+        "name": "latitude",
+        "type": "number",
+        "description": "Requested coordinate; grid point returned (probe: 45.448154)",
+        "unit": "degrees"
+      },
+      {
+        "name": "longitude",
+        "type": "number",
+        "description": "Requested coordinate; grid point returned (probe: 11.003136)",
+        "unit": "degrees"
+      },
+      {
+        "name": "daily.time",
+        "type": "date string",
+        "description": "Local calendar day when timezone=Europe/Rome (ISO 8601)",
+        "unit": "YYYY-MM-DD"
+      },
+      {
+        "name": "daily.temperature_2m_max",
+        "type": "number",
+        "description": "Daily maximum air temperature at 2 m",
+        "unit": "°C"
+      },
+      {
+        "name": "hourly.temperature_2m",
+        "type": "number",
+        "description": "Hourly air temperature at 2 m",
+        "unit": "°C"
+      },
+      {
+        "name": "hourly.shortwave_radiation",
+        "type": "number",
+        "description": "Shortwave radiation",
+        "unit": "W/m²"
+      }
+    ],
+    "notes": "Structure confirmed from a live probe (JSON). Variable list documented on the historical API docs page; full schema not read in detail."
+  },
+  "temporal": {
+    "start": "1940-01-01",
+    "end": null,
+    "grain": "daily",
+    "metadata_last_updated": "2026-11-15",
+    "open_ended": true,
+    "refresh_cadence": "unknown"
+  },
+  "spatial": {
+    "coverage": [
+      "IT"
+    ],
+    "code_system": "decimal latitude/longitude (WGS84); no country or place codes",
+    "notes": "Register default point 45.44, 10.99 is not a recorded shop location; the grid point used by the probe was 45.448154, 11.003136, elevation 69 m. Choice of city/point must be justified and logged. The API accepts any coordinate worldwide."
+  },
+  "ownership": {
+    "owner": "Open-Meteo.com (Switzerland; CEO named on the terms page)",
+    "publisher": "Open-Meteo.com",
+    "steward": null
+  },
+  "licence": {
+    "name": "CC BY 4.0 for the data (per licence page); free API use restricted to non-commercial use (per terms page)",
+    "evidence": "probe_url https://open-meteo.com/en/licence: 'API data are offered under Attribution 4.0 International (CC BY 4.0)'. probe_url https://open-meteo.com/en/terms: 'Non-Commercial Use ... You may only use the free API services for non-commercial purposes'; commercial examples include 'Commercial products or promotional activities'; 'Free / Open-Access API ... Commercial use ❌'. Historical docs page (probe_url) shows 'Usage licence: Non-Commercial Commercial Self-Hosted'. list_external_register: agreement_status 'not_required_open_data', approved_purposes ['prototyping', 'production'].",
+    "url": "https://open-meteo.com/en/terms",
+    "commercial_use": "no",
+    "attribution_text": "Weather data by Open-Meteo.com (link required, per licence page)",
+    "mixed_sources": true,
+    "agreement_status": "not_required_open_data per register; conflicts with terms page for commercial use on the free API"
+  },
+  "access": {
+    "method": "rest_api",
+    "auth_required": false,
+    "reachable": true,
+    "approx_size_bytes": 5344,
+    "classification": "public",
+    "request_process": "Commercial use of the free API is not permitted per terms; a paid API subscription (Standard/Professional/Enterprise, where commercial use is allowed) is needed for Valdena's business use. Legal review of this conflict with the register's 'production' approval is required before production use. Rate limits: <10,000 calls/day, 5,000/hour, 600/minute on the free tier."
+  },
+  "declared_metadata": {
+    "has_missing_values": null,
+    "contains_pii": "no",
+    "default_query_in_register": {
+      "latitude": "45.44",
+      "longitude": "10.99",
+      "start_date": "2014-01-01",
+      "end_date": "2014-01-03",
+      "hourly": "temperature_2m,shortwave_radiation",
+      "timezone": "UTC"
+    }
+  },
+  "documentation_excerpts": [
+    "Gap-free and consistent historical weather data using weather reanalysis from ERA5 (0.25°, from 1940) and ERA5-Land (0.1°, from 1950) and ECMWF IFS (9 km, from 2017). (historical docs page)",
+    "You may only use the free API services for non-commercial purposes. (terms page)",
+    "Commercial use: Free / Open-Access API ❌; Standard API ✅; Professional API ✅; Enterprise ✅. (terms page)",
+    "The data obtained through the API is provided under the terms of the CC-BY 4.0 licence (terms page); API data are offered under Attribution 4.0 International (CC BY 4.0) (licence page)."
+  ],
+  "quality_notes": [
+    "Licence conflict: licence page and terms page say the data is CC BY 4.0, but the terms page restricts the free API to non-commercial use and lists 'Commercial products or promotional activities' as commercial. Valdena Gelato Shop is a commercial business, so the free endpoint is not licensed for its use. The register's agreement_status 'not_required_open_data' with approved purpose 'production' does not reflect this. Recorded as a blocker pending Legal review, not resolved here.",
+    "Register default query is hourly in UTC; for a daily sales-day match, query daily temperature_2m_max with timezone=Europe/Rome. The probe with that timezone returned daily dates in local time (utc_offset_seconds 3600) and 7 days of daily values, so local-day alignment is supported.",
+    "Grid-point snapping: requested 45.44/10.99 returned 45.448154/11.003136 (elevation 69 m). The grid point, not the shop address, sets the temperature series. A shop location or city choice must be documented in decisions.md.",
+    "Reanalysis lag and revision policy near the as-of date (2026-10-15) were not documented in any source read; the recent window ends 2026-03-31, so it is well inside the probed range, but revision behaviour is unknown.",
+    "Historical docs page offers ERA5 (from 1940) and ERA5-Land (from 1950), and ECMWF IFS 9 km (from 2017). Which model the API returns by default for a given date range was not confirmed; the history window (2023-06 to 2025-05) would be covered under any of them.",
+    "Pricing and the paid subscription cost were not checked; a cost estimate is needed if a paid plan is required."
+  ],
+  "sample_findings": [
+    "Probe call_public_api (start 2026-03-25, end 2026-03-31, daily=temperature_2m_max, timezone=Europe/Rome): HTTP 200, JSON, 7 daily dates 2026-03-25 to 2026-03-31; temperature_2m_max values in °C, e.g. 17.9, 13.1, 16.1 (no sentinel values seen in the 7 days shown).",
+    "Probe response also returned hourly temperature_2m and shortwave_radiation (168 hours) because the default hourly list was merged into the query; no negative temperatures in the shown values (wintertime values only, so summer range not tested).",
+    "Probe result utc_offset_seconds 3600 and timezone_abbreviation GMT+1 confirm local-day timestamps (daily.time is local date).",
+    "No sample of the summer 2023-2025 windows was pulled; the summer values for the history window are not checked by this probe."
+  ],
+  "unknowns": [
+    "Whether the paid subscription covers Valdena's use, its price and terms (not read).",
+    "Reanalysis lag and revision policy near the as-of date; whether the recent window data are final.",
+    "Which model (ERA5, ERA5-Land or IFS) is returned for each date range, and at what resolution.",
+    "Whether a shop location exists in the data (the grid point is not the shop address).",
+    "Data owner's support or steward contact beyond the company; no formal SLA found.",
+    "Refresh cadence of the archive (not stated in any page read)."
+  ],
+  "provenance": [
+    {
+      "claim": "Endpoint https://archive-api.open-meteo.com/v1/archive returned HTTP 200 JSON with daily temperature_2m_max for 2026-03-25 to 2026-03-31 in Europe/Rome local time.",
+      "evidence": "call_public_api api.open_meteo_archive, query start_date 2026-03-25, end_date 2026-03-31, daily temperature_2m_max, timezone Europe/Rome"
+    },
+    {
+      "claim": "Register entry: agreement_status not_required_open_data; approved_purposes prototyping and production; default coordinates 45.44/10.99, timezone UTC, hourly temperature_2m and shortwave_radiation.",
+      "evidence": "list_external_register, entry api.open_meteo_archive"
+    },
+    {
+      "claim": "Data offered under CC BY 4.0 per licence page; free API restricted to non-commercial use per terms page.",
+      "evidence": "probe_url https://open-meteo.com/en/licence and https://open-meteo.com/en/terms"
+    },
+    {
+      "claim": "Historical docs state ERA5 from 1940, ERA5-Land from 1950, ECMWF IFS 9 km from 2017; a 'Usage licence: Non-Commercial' selector is shown on the historical API page.",
+      "evidence": "probe_url https://open-meteo.com/en/docs/historical-weather-api"
+    },
+    {
+      "claim": "Probe grid point returned 45.448154 N, 11.003136 E, elevation 69 m, utc_offset 3600 s.",
+      "evidence": "call_public_api api.open_meteo_archive response shape"
+    }
+  ],
+  "status": "active"
+}

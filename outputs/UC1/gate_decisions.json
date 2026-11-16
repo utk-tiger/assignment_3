@@ -1,0 +1,25 @@
+{
+  "_comment": "Gate decisions for UC1 (2026-11-16): one accept/reject with a reason for each link in outputs/UC1/links.json. Context and inspection evidence: outputs/artifacts/decisions.md, 'Gate decisions (UC1)'.",
+  "decisions": [
+    {
+      "url": "https://archive.ics.uci.edu/dataset/360/air+quality",
+      "decision": "accept",
+      "reason": "The UCI page and full sample show hourly reference-analyser readings for NO2, NOx, CO and benzene from an unnamed Italian city, running 2004-03-10 to 2005-04-04, which matches the N1 prototype window exactly. The pipeline should still flag three problems: the city is not named, missing values are coded -200 even though the metadata says \"no\" missing values (NMHC is only 9.8% filled), and the page shows a CC BY 4.0 link while its own notes say \"exclusively for research purposes. Commercial purposes are fully excluded\". That licence conflict needs Legal review under the register policy."
+    },
+    {
+      "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sdg_11_52?format=JSON&lang=EN&geo=IT",
+      "decision": "accept",
+      "reason": "The API returns a small JSON-stat table of yearly premature deaths from PM2.5 for Italy (as a number and a rate). That is exactly the national yearly context N6 asks for, a \"could\" need. Its years run 2005 to 2023 with 2006 missing (TIME_GAPS). So it overlaps the prototype window only in 2005 and does not cover the 2024–2025 production window, and the assessment should say so."
+    },
+    {
+      "url": "https://catalog.data.gov/dataset/open-air-chicago-hour-aggregations",
+      "decision": "accept",
+      "reason": "I am accepting this on purpose, as the assignment requires, so the pipeline tries it and records the refusal as a finding. A US city's sensor data could not serve N1 for a northern-Italian client anyway. The inspector already refuses it with DOMAIN_NOT_ALLOWLISTED for catalog.data.gov, and I expect the pipeline to log the same refusal and mark the source unreachable. The host must stay off the allowlist."
+    },
+    {
+      "url": "https://www.dati.lombardia.it/Ambiente/Temperatura-fino-al-2010/6eu4-4tja",
+      "decision": "accept",
+      "reason": "The landing page's JSON-LD confirms ARPA Lombardia air-temperature station data \"fino al 31 dicembre 2010\" under CC0 1.0, with CSV/XML/XLSX exports on the same allowlisted host. That fits its Step 2b role as a station benchmark for Open-Meteo on N3 in the prototype window. The capped sample shows the export is sorted by sensor: the first 2 MB is all sensor 13 from 1987 to 1996, so it never reaches 2004–2005. The profiler will have to rely on the metadata and Step 2b's checks for coverage of the window. It should also note that the file is very large and covers temperature only (no humidity)."
+    }
+  ]
+}

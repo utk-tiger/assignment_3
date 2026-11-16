@@ -1,0 +1,46 @@
+Model: gemini-3.8-flash
+Query: Eurostat dataset sdg_11_52 premature deaths due to exposure to fine particulate matter PM2.5: what years and countries does it cover, and where is its dataset page?
+
+Eurostat dataset **`sdg_11_52`** (*Premature deaths due to exposure to fine particulate matter (PM2.5)*) covers the following scope:
+
+---
+
+### 1. Years Covered
+* **Time range:** **2005 to 2023** (annual data).
+* **Note:** The year **2006 is missing** across the series because European-wide interpolated $\text{PM}_{2.5}$ maps were not produced for that reference year.
+
+---
+
+### 2. Countries and Geographic Entities Covered
+The indicator data originates from the European Environment Agency (EEA) and encompasses:
+* **EU Aggregates:** Total EU (such as `EU27_2020`).
+* **All 27 EU Member States:** Austria, Belgium, Bulgaria, Croatia, Cyprus, Czechia, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Ireland, Italy, Latvia, Lithuania, Luxembourg, Malta, Netherlands, Poland, Portugal, Romania, Slovakia, Slovenia, Spain, Sweden.
+* **EFTA Countries:** Iceland, Liechtenstein, Norway, Switzerland.
+* **Candidate & Western Balkan Countries:** Albania, Bosnia and Herzegovina, Montenegro, North Macedonia, Serbia, and Kosovo.
+* **United Kingdom:** Historical coverage for years prior to its exit from the EU.
+
+---
+
+### 3. Dataset Page Links
+* **Eurostat Data Browser Table:**  
+  [https://ec.europa.eu/eurostat/databrowser/view/sdg_11_52/default/table?lang=en](https://ec.europa.eu/eurostat/databrowser/view/sdg_11_52/default/table?lang=en)
+* **Persistent DOI Link:**  
+  [https://doi.org/10.2908/sdg_11_52](https://doi.org/10.2908/sdg_11_52)
+
+Citations:
+  [1] europa.eu: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEDUWbyaMynA6n_ctf4GtbmqtgnjDRIGFh6rxA5fjqadqg6wpsKHnSBQcEXVqpaUSgjsJjZDa9PlaqIwnHoxfuG4C6GDD5_M2wZgf1mdk3wT8BmiKsHsvNxVR6XCKF7gJ9l-tqB2PydDpbH_DY3GlBLrkQXCOenOuMyQxcqSElCyhWLUMyOATsEn190rY8xuW6uiXQOkk7dqXGgk_mvIqSEl-Po
+       supports: **Time range:** **2005 to 2023** (annual data)
+  [2] europa.eu: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH9_688y9s_OfHxC6CORT2S4FhQmkbkLwxNoHD70NI4jPHz7CAlM6ff47n5kDRsdanr72VqiqXgArDZTNrDVN2N-5j6_j0dkQuZu93qTNylGshuWlfDHr3viaFFJAo1XvQKba4GSemtkwox4PInl82ZbfyLPw1O8bGDMTLuNtrGdQ==
+       supports: **Note:** The year **2006 is missing** across the series because European-wide interpolated $\text{PM}_{2.5}$ maps were not produced for that reference year
+  [3] europa.eu: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQECHPRJpKQkoNTR1G8mS4IUTUpPAT6F51osI7nFfbUr69vtwiqyroYhJ2CZmCktdC4zS72-fV-ttEpZ-9Z208yKrDMtQ-3xx0GyD6DQLtt1Yyfwqu0GFNt4p46yh_4yBDYDIQ6v8kIfc1mWvSx4si9TfzPWxQ0x6wFKdRCG97v-iw==
+       supports: The indicator data originates from the European Environment Agency (EEA)
+  [4] europa.eu: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH3xVZmVk6OcA5vrAFoaeAkcQNtc6uS_GzkstXCvAuZgwYrcZGPhCu-H4DKVuPqalRKWWNVk3UKoAmFU9sC_pq-BvvcQBQF9TvsvpudLP-4vBFSUV3APmc2VpP0lkb6Q-6e4YiOBk_nhkZZiMS7tMFXhEf8PtbeaKuucG0xs3JGXWTK8vNA05Lj0OmmOBeydqG4Rf-oXA==
+       supports: **EU Aggregates:** Total EU (such as `EU27_2020`)
+       supports: **All 27 EU Member States:** Austria, Belgium, Bulgaria, Croatia, Cyprus, Czechia, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Ireland, Italy, Latvia, Lithuania, Luxembourg, Malta, Ne
+  [5] lag21.de: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGjWcMeSXuhCCwUxOgQeZDqLBIbMGW0u33--qNkTFdWQHm9MjMUneD_zRYtZ0veBkooJAL5XCZylg-GwA-fwr7mWq4W-t1EYD1L9mYkVH2qNqdtALU09TWdxf8WhPijtve52cvISwGhFDrZQx--AMd2taTNT4dSpClR8jIpFYEEO7OLnPATFRlT1EXLiHBvlfIrP1IxrPw=
+       supports: **EFTA Countries:** Iceland, Liechtenstein, Norway, Switzerland
+       supports: **Candidate & Western Balkan Countries:** Albania, Bosnia and Herzegovina, Montenegro, North Macedonia, Serbia, and Kosovo
+  [6] valesor.eu: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEW4RMNG-NSfZ-BvQHmaSqsNDD2PnOWSz8Qgql90dN9NOLVsLlLn1wqnz9T0nqoGe6ouaeYix4itnpYm4Wc8m-WULZncUOw7oRRNJWldd8mJVsHvcqgijecAcEdF2flhvQPHHHFXVGqDSSyxREbQKpXSPK6AKzl1BrobLkmmTfeEoJjgtvZQ17YTpThc-uWFoScRmPnzPJuShFcmQlXM8DIpbbE_bodQEfoOp0=
+       supports: [https://ec.europa.eu/eurostat/databrowser/view/sdg_11_52/default/table?lang=en](https://ec.europa.eu/eurostat/databrowser/view/sdg_11_52/default/table?lang=en)
+  [7] europa.eu: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEiT-V6yBYr-bRtsxwlTZbRHxcqZ5c8nOYuUW1TzCamHr5K0od7qe3HMOIFFwEal-ahWbfg0hQkYEMv3rr-4qdTqzEjmfMrTYk-9AviL90axeiui1DH98yQa0jHzahwD1T00rMJdW6CEnF47v-w7XZ5t15BN8NmwjM3I8c=
+       supports: [https://doi.org/10.2908/sdg_11_52](https://doi.org/10.2908/sdg_11_52)

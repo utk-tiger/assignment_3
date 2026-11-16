@@ -1,0 +1,4 @@
+{"ts": 1794778206.532, "kind": "llm_call", "agent": "risk_assessor", "turn": 1, "model": "claude-haiku-5-5", "stop_reason": "max_tokens", "input_tokens": 31250, "output_tokens": 16000, "cache_read_input_tokens": 0}
+{"ts": 1794778206.533, "kind": "submit", "agent": "risk_assessor", "ok": false, "errors": ["<root>: 'assessments' is a required property", "<root>: 'overall_verdict' is a required property", "<root>: 'overall_rationale' is a required property", "<root>: 'need_coverage' is a required property"]}
+{"ts": 1794778237.515, "kind": "llm_call", "agent": "risk_assessor", "turn": 2, "model": "claude-haiku-5-5", "stop_reason": "tool_use", "input_tokens": 41908, "output_tokens": 6959, "cache_read_input_tokens": 0}
+{"ts": 1794778237.519, "kind": "submit", "agent": "risk_assessor", "ok": true, "errors": []}

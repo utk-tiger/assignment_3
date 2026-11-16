@@ -1,0 +1,137 @@
+{
+  "source_id": "link.lombardia_6eu4_4tja_097de4",
+  "kind": "dataset_link",
+  "title": "Temperatura fino al 2010 (ARPA Lombardia air temperature, historical, Open Data Regione Lombardia)",
+  "summary": "Historical air-temperature (°C) readings from the ARPA Lombardia Idro-nivo-meteorological monitoring network, published on the Regione Lombardia open-data portal, covering the series up to 31 December 2010. Each row is one sensor reading with sensor id, timestamp (ora solare, labelled as the end of the measurement interval), value and a status flag. Sensor locations and series start/end dates are said to be in a separate station register (nf78-nj6b), which was not profiled. The sample read only one sensor (id 13) in 1987–1988, so coverage of the 2004-03-10 to 2005-04-04 prototype window is not verified by this profile.",
+  "schema": {
+    "documented": "free_text_only",
+    "field_count": 4,
+    "fields": [
+      {
+        "name": "idSensore",
+        "description": "Sensor identifier; join key to station register nf78-nj6b (per dataset description)",
+        "pii": false,
+        "type": "integer",
+        "unit": null
+      },
+      {
+        "name": "Data",
+        "description": "Timestamp, ora solare (standard time), refers to end of measurement interval",
+        "pii": false,
+        "type": "date/time (format %d/%m/%Y %H:%M:%S in sample)",
+        "unit": "local standard time"
+      },
+      {
+        "name": "Valore",
+        "description": "Air temperature",
+        "pii": false,
+        "type": "number",
+        "unit": "°C"
+      },
+      {
+        "name": "Stato",
+        "description": "Status flag; meaning not documented in the text read; only 'VA' seen in sample",
+        "pii": false,
+        "type": "text",
+        "unit": null
+      }
+    ],
+    "notes": "Field names and types come from the CSV header and sample profile, not from a data dictionary. The landing page's prose description is the only documentation read. Meaning of 'VA' not established."
+  },
+  "temporal": {
+    "start": "1987-11-25",
+    "end": "2010-12-31",
+    "grain": "hourly",
+    "metadata_last_updated": "2025-05-06",
+    "open_ended": false,
+    "refresh_cadence": "unknown"
+  },
+  "spatial": {
+    "coverage": [
+      "IT"
+    ],
+    "code_system": "free-text sensor id (idSensore); no geocodes in this file; station locations only via register nf78-nj6b (not profiled)",
+    "notes": "Stations are in Lombardy (Regione Lombardia portal, ARPA Lombardia network). Spatial coverage stated only as Lombardy in the portal; the sensors belong to an idro-nivo-meteorological network, not necessarily traffic-adjacent urban air-quality sites. Client site (Valdena, fictional, northern Italy) is not stated to be in Lombardy."
+  },
+  "ownership": {
+    "owner": "ARPA Lombardia (creator per dataset metadata)",
+    "publisher": null,
+    "steward": null
+  },
+  "licence": {
+    "name": "CC0 1.0",
+    "evidence": "inspect_dataset_link: licence from json-ld (found_in: json-ld), licence_url http://creativecommons.org/publicdomain/zero/1.0/legalcode; jsonld_datasets[0].license on landing page https://www.dati.lombardia.it/Ambiente/Temperatura-fino-al-2010/6eu4-4tja",
+    "url": "http://creativecommons.org/publicdomain/zero/1.0/legalcode",
+    "commercial_use": "yes",
+    "attribution_text": "Creator listed as ARPA Lombardia (json-ld creator field); CC0 does not require attribution, no attribution wording found in the metadata read",
+    "agreement_status": null,
+    "mixed_sources": false
+  },
+  "access": {
+    "method": "file_download",
+    "auth_required": null,
+    "reachable": true,
+    "approx_size_bytes": null,
+    "classification": "open",
+    "request_process": "Public CSV/XML/XLSX export at https://www.dati.lombardia.it/api/v3/views/6eu4-4tja/export.csv (CSV listed as distribution). Landing page returned HTTP 200. Login requirement not stated (downloads_require_login = null). Full file size not stated; the export was not downloaded beyond a 200 KB sample."
+  },
+  "declared_metadata": {
+    "has_missing_values": null,
+    "contains_pii": null,
+    "licence_declared": "CC0 1.0",
+    "datePublished": "2023-11-28",
+    "dateModified": "2025-05-06",
+    "keywords": "ambiente, meteorologia, nivologia, rete monitoraggio, stazioni, dati osservativi, servizio meteorologico, centro nivometeo"
+  },
+  "documentation_excerpts": [
+    "Temperatura dell'aria (in °C) rilevata dai termometri della rete di monitoraggio Idro-nivo-meteorologica di ARPA Lombardia fino al 31 dicembre 2010.",
+    "La disposizione dei sensori e delle stazioni e la data di inizio e fine delle serie si possono trovare nel file di anagrafica: https://www.dati.lombardia.it/Ambiente/Stazioni-Meteorologiche/nf78-nj6b/data.",
+    "NB: l'orario del dato è \"ora solare\" e si riferisce alla fine dell'intervallo di misura."
+  ],
+  "quality_notes": [
+    "Sample (first ~5,200 rows, 200 KB) contains a single sensor id (13) and dates only from 1987-11-25 to 1988-11-13. Coverage of 2004-03-10 to 2005-04-04 is NOT verified by this profile.",
+    "Candidate claim vs sample: the candidate said the sensor checked had half-hourly steps. The sample shows hourly timestamps (e.g. 25/11/1987 15:00, 16:00, 17:00). Grain recorded as hourly; sub-hourly steps not observed.",
+    "Candidate claim 'runs 1987-11-25 to 2011-01-01' vs documentation 'fino al 31 dicembre 2010': the portal text says the series ends 31 Dec 2010; the 2011-01-01 end appears to be a timestamp artefact of the interval-end convention, not confirmed. End recorded as 2010-12-31 per documentation.",
+    "Candidate claim of 178 sensors reporting 2004-03-10 to 2005-04-04 and CC0 'attribution ARPA Lombardia': sensor count not verifiable from the sample; licence confirmed as CC0 1.0 via json-ld, attribution is only the creator field.",
+    "Valore (temperature) has negative values: about 2,050 of 5,217 sampled rows are negative (min -10.7 °C, max 20.3 °C in sample). Plausible for an alpine/ mountain network but the sample is one sensor in winter-to-autumn 1987-88, so not representative. Zero share 0.8%. No sentinel values such as -999 or NA seen in the sample.",
+    "Stato flag: only value 'VA' in sample; meaning (validated? provisional?) not documented in the text read.",
+    "Timestamp is ora solare (standard time, no daylight saving), and refers to end of measurement interval. Joins with hourly air-quality or traffic data need an explicit time-zone and interval-alignment step.",
+    "Network is an idro-nivo-meteorological network (hydrological/snow/meteorological), not an urban air-quality or traffic network. Representativeness for city-centre temperature at the client site is unknown.",
+    "Humidity (Umidità relativa fino al 2010, nure-mhrg) and station register (nf78-nj6b) were named in the candidate but not profiled here; they are separate sources.",
+    "Dataset metadata modified 2025-05-06; no refresh cadence stated (the dataset is historical and ends 2010)."
+  ],
+  "provenance": [
+    {
+      "claim": "Dataset is ARPA Lombardia air-temperature data from the Idro-nivo-meteorological network, up to 31 Dec 2010, in °C, with ora solare timestamps at end of interval",
+      "evidence": "inspect_dataset_link https://www.dati.lombardia.it/Ambiente/Temperatura-fino-al-2010/6eu4-4tja, jsonld_datasets[0].description"
+    },
+    {
+      "claim": "Licence is CC0 1.0 found in json-ld; creator ARPA Lombardia; datePublished 2023-11-28; dateModified 2025-05-06",
+      "evidence": "inspect_dataset_link licence (found_in json-ld) and jsonld_datasets[0].license, creator, datePublished, dateModified"
+    },
+    {
+      "claim": "Export distribution is public CSV at api/v3/views/6eu4-4tja/export.csv with columns idSensore, Data, Valore, Stato; sample shows hourly timestamps for sensor 13 in Nov 1987 to Nov 1988",
+      "evidence": "sample_data_file https://www.dati.lombardia.it/api/v3/views/6eu4-4tja/export.csv (200 KB sample, not whole file)"
+    },
+    {
+      "claim": "Negative temperatures in about 40% of sampled rows and no sentinel values in the sample",
+      "evidence": "sample_data_file profile of Valore (negative_count 2050 of 5217 rows, sentinel_counts empty)"
+    },
+    {
+      "claim": "Candidate-stated 2004-2005 sensor coverage, 178 sensors, half-hourly steps and humidity dataset are unverified",
+      "evidence": "Not present in sample_data_file or inspect_dataset_link output; candidate text in the request"
+    }
+  ],
+  "unknowns": [
+    "Whether any sensor reports data in 2004-03-10 to 2005-04-04 (not checked; sample only covers sensor 13 in 1987-88)",
+    "Number of sensors and their locations (station register nf78-nj6b not profiled)",
+    "Meaning of the Stato flag values (only 'VA' seen)",
+    "Full file size and row count",
+    "Whether a login or rate limit applies to the full export (not tested)",
+    "Data owner contact and stewardship beyond creator ARPA Lombardia (contact email removed from source text, not recorded)",
+    "Whether the series has gaps or changes in sampling interval over 1987-2010",
+    "Relationship between this dataset and client's region; the client site is not stated to be in Lombardy",
+    "Humidity dataset (Umidità relativa fino al 2010) and station register not profiled here",
+    "Dataset status (active/archived) not stated"
+  ]
+}

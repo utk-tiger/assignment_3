@@ -1,0 +1,41 @@
+Model: gemini-3.8-flash
+Query: Open data hourly road traffic vehicle counts from induction loop counters in an Italian city (for example Milan, Bologna or Verona) covering 2024 and 2025: exact dataset page URL, licence and period.
+
+The open data portal for **Bologna, Italy** (*Comune di Bologna*) publishes road traffic counts from induction loop counters (*spire a induzione*) broken down hourly into annual datasets:
+
+---
+
+### **1. 2024 Dataset**
+* **Dataset Name:** *Rilevazione flusso veicoli tramite spire - anno 2024*
+* **Exact Dataset Page URL:** [https://opendata.comune.bologna.it/explore/dataset/rilevazione-flusso-veicoli-tramite-spire-anno-2024/information/](https://opendata.comune.bologna.it/explore/dataset/rilevazione-flusso-veicoli-tramite-spire-anno-2024/information/)
+* **Licence:** Creative Commons Attribution 4.0 International (**CC BY 4.0**)
+* **Period Covered:** January 1, 2024 – December 31, 2024 (hourly vehicle count per sensor)
+
+---
+
+### **2. 2025 Dataset**
+* **Dataset Name:** *Rilevazione flusso veicoli tramite spire - anno 2025*
+* **Exact Dataset Page URL:** [https://opendata.comune.bologna.it/explore/dataset/rilevazione-flusso-veicoli-tramite-spire-anno-2025/information/](https://opendata.comune.bologna.it/explore/dataset/rilevazione-flusso-veicoli-tramite-spire-anno-2025/information/)
+* **Licence:** Creative Commons Attribution 4.0 International (**CC BY 4.0**)
+* **Period Covered:** January 1, 2025 – December 31, 2025 (hourly vehicle count per sensor)
+
+---
+
+### **Dataset Details**
+* **Data Granularity:** Counts are provided per hour (columns include `data`, `ora`, `flusso`, along with loop IDs and geographical coordinates).
+* **Data Quality Companion:** The portal also publishes complementary accuracy datasets (e.g., *Accuratezza spire anno 2024* / *2025*) detailing operational percentages and counter malfunction indicators for each hourly interval.
+
+Citations:
+  [1] comune.bologna.it: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFC2CnXrVe_JjLWaMxxPuRgMgRhYkcccJe-j5rnrRLMfHF6AUI8QaevyfakvWR7JWxVAX9cfqitIJfy4-kNoNX-vG3V30RXYVpiWLSVq2EyPQ_RLC7IegIHSlMEsiizbM9w8IW8ATRbB8V3GyeRp15rNomdhQMf4BfBVzaLWzeQdsbtZ9Jz5ocMwjesNQ1tXyDbWXGdJMkC8aA7CpBPSrE0FQ==
+       supports: **Dataset Name:** *Rilevazione flusso veicoli tramite spire - anno 2024*
+       supports: **Licence:** Creative Commons Attribution 4.0 International (**CC BY 4.0**)
+  [2] researchgate.net: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFrTKeN8HTfKjLlMF6I2AszQDE-GYrST5UrfScyPcEqXO_8p1mXr3ASRBQoqCMP2i1Ykk1Fs56XWcAnHCpBlqIeku75QqdWu8Cw3khKlg2jdzqvlxsKNEWLrHtJuzxAmH5xeqGwnorzhxiBDstxP6C0YYi3atxLmg49WSTR2nS7zzBNVNwOQlJVKdhXxL19bcnev0IpapnTdDTyZ9XJkDDOc6ZvkiAa9d_8phgfwiGAs4_aM7EoZwq3_gs6xmJr35oSkiC6Dw==
+       supports: **Exact Dataset Page URL:** [https://opendata.comune.bologna.it/explore/dataset/rilevazione-flusso-veicoli-tramite-spire-anno-2024/information/](https://opendata.comune.bologna.it/explore/dataset/rile
+  [3] comune.bologna.it: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGQDfwYnZZsRuI739zJOHco3ogDfExGVm4CldMSaGLmmCD3RdHvDhploZq_n_fUYbAnIfYDHF5S57hxlbDBGUw2fVbMWUIYCn4nLO-ZNZR5XSY8oPoiFUzGRqtv5tGSMo_el2SDYzYHX1zgGyh3Zsbdeb-7bJfC8L5V8VqXO9f0bS_cZ081S3frdyVOV3JLs92-WUfVnn_7c5dHP5cBsVuKDw==
+       supports: **Period Covered:** January 1, 2024 – December 31, 2024 (hourly vehicle count per sensor)
+       supports: Dataset Name:** *Rilevazione flusso veicoli tramite spire - anno 2025* *
+       supports: Licence:** Creative Commons Attribution 4.0 International (**CC BY 4.0**) *
+  [4] europa.eu: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEvesSPPGeKa6yb6TWnSUw_LB6yyZFxM6KKZjF_QZAKxaxkku_5O57_b6q1T1IKvWhfIPP2FXhr75_8aZP6qlwbLzH57_AqQE0iVp1WKI6JzLyhPJcYwHlehU9MLr6ui-WdoT4q2llNEVjLuhWwoZrFLCNaWem5p2wbaofx0VxJ2oFs9bvrPB8-yZib7r0dNhDQH63wT-lBl69RVsre299CxHi3x2axZ0E0R7KIEQfzsA==
+       supports: Exact Dataset Page URL:** [https://opendata.comune.bologna.it/explore/dataset/rilevazione-flusso-veicoli-tramite-spire-anno-2025/information/](https://opendata.comune.bologna.it/explore/dataset/rileva
+  [5] comune.bologna.it: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFjYkzxP_jnxasWgihdvntA8pVnI3jVrn66QPVmK56jbSaGFnx_IjApRubDaWq1YRV686WqAN-Lpz2GBvy2pIOPStDr9cNgV3OwS-a4OjHG9USe0SaSPF-SebDB2Ljlg1NWvbQf-hHfPEFgi_V8ciM=
+       supports: ta Quality Companion:** The portal also publishes complementary accuracy datasets (e.g., *Accuratezza spire anno 2024* / *2025*) detailing operational percentages and counter malfunction indicators fo

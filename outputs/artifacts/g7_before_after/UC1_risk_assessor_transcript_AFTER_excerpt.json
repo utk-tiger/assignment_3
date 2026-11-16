@@ -1,0 +1,372 @@
+{
+ "_comment": "Excerpt of outputs/UC1/transcripts/risk_assessor.json (AFTER the G7 fix): the Risk Assessor's assistant turns with their original message_index; the system prompt and the long user task (use case, records, rule flags) are omitted.",
+ "agent": "risk_assessor",
+ "messages_total": 3,
+ "assistant_messages": [
+  {
+   "message_index": 1,
+   "role": "assistant",
+   "content": [
+    {
+     "signature": "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",
+     "thinking": "",
+     "type": "thinking"
+    },
+    {
+     "id": "toolu_bdrk_01KA6g1PDbZoo7McLX8YHzDP",
+     "input": {
+      "assessments": [
+       {
+        "source_id": "api.open_meteo_archive",
+        "verdict": "feasible_with_conditions",
+        "red_flags": [
+         {
+          "code": "LIC-MIXED",
+          "evidence": "licence.mixed_sources=true; licence page lists upstream Copernicus C3S reanalysis under a separate licence that was not read (licence.unknowns, quality_notes).",
+          "severity": "major"
+         },
+         {
+          "code": "LIC-ATTRIBUTION",
+          "evidence": "licence.name 'CC BY 4.0'; attribution_text 'Weather data by Open-Meteo.com (per licence page link requirement); upstream C3S attribution not read'.",
+          "severity": "minor"
+         },
+         {
+          "code": "COV-GEO-MISMATCH",
+          "evidence": "Valdena coordinates are not stated in any source (spatial.notes, unknowns); only a Milan-area point (45.46, 9.19) was probed; quality_notes say the Milan point must not be recorded as a Valdena assumption.",
+          "severity": "major"
+         },
+         {
+          "code": "DQ-METADATA-CONTRADICTION",
+          "evidence": "candidate why_relevant says register default is Lisbon (38.72, -9.14); register default_query in declared_metadata is 45.44, 10.99 (quality_notes: 'Candidate note is inconsistent with the register').",
+          "severity": "minor"
+         }
+        ],
+        "conditions": [
+         "Legal confirms the upstream C3S reanalysis terms and gives sign-off for production use (owner: Legal; policy.open_data_links requires Legal sign-off).",
+         "Valdena Civic Health Office supplies justified coordinates for the Valdena site; the grid-cell representativeness against the client's stations and clinic districts is checked before use (owner: Valdena Civic Health Office with the analytics team).",
+         "Add relative_humidity_2m to the request; keep the attribution 'Weather data by Open-Meteo.com' and the C3S attribution in outputs (informational).",
+         "Confirm the archive start date and the latest available date before relying on the prototype and production windows (unknowns)."
+        ],
+        "rationale": "Rule 2/8: no unresolvable blocker. The source serves N3 (must) in both windows. Prototype (2004-03-10 to 2005-04-04) and production (2024-01-01 to 2025-12-31) were both probed and returned hourly temperature and humidity. Majors are LIC-MIXED and COV-GEO-MISMATCH, each with a named owner and an achievable condition, so the verdict is feasible_with_conditions. Not feasible was not triggered because no blocker is present. Open-ended end is not a staleness issue (FRS-STALE not raised).",
+        "who_can_resolve": [
+         "Legal",
+         "Valdena Civic Health Office",
+         "analytics team"
+        ]
+       },
+       {
+        "source_id": "internal.airq.station_readings",
+        "verdict": "feasible_with_conditions",
+        "red_flags": [
+         {
+          "code": "ACC-RESTRICTED",
+          "evidence": "access.auth_required=true; classification 'internal'; request_process 'Request to the Environment Monitoring Unit ... Approval status and expected turnaround not stated.'",
+          "severity": "major"
+         },
+         {
+          "code": "GOV-CATALOG-WIKI-CONFLICT",
+          "evidence": "Wiki station_network (last_edited 2024-07-01): 'Station VR-03 was switched off on 2024-06-30'; 'airq.station_readings still lists the network as active.' Catalog export (2026-10-14) still shows status 'active' and temporal end null.",
+          "severity": "major"
+         }
+        ],
+        "conditions": [
+         "Environment Monitoring Unit approves warehouse SQL access for the production window (owner: Environment Monitoring Unit).",
+         "Exclude station VR-03 after 2024-06-30 and treat its absence as missing, not zero (owner: Environment Monitoring Unit).",
+         "Confirm that the other stations report continuously through 2025-12-31; the wiki continuity claim is dated 2024-07-01 and unverified (owner: Environment Monitoring Unit).",
+         "Confirm the station count and reconcile the row count (about 4.2 million rows against about 33,000 hours); profile a sample for sentinel values, negatives and validation status before use (owner: Environment Monitoring Unit)."
+        ],
+        "rationale": "Rule 4/6: the source fully covers the production window for N1 (catalog start 2023-01-01, open-ended). It does not cover the prototype window, which is served by the UCI file (partial-window coverage is not a not_feasible trigger). The catalog/wiki conflict on VR-03 and the restricted access are fixable with named owners, so the verdict is feasible_with_conditions. Licence is internal, and there are no licence terms for a clinic warning model, which is recorded as an unknown.",
+        "who_can_resolve": [
+         "Environment Monitoring Unit"
+        ]
+       },
+       {
+        "source_id": "internal.clinic.resp_visits_daily",
+        "verdict": "feasible_with_conditions",
+        "red_flags": [
+         {
+          "code": "ACC-RESTRICTED",
+          "evidence": "access.auth_required=true; classification 'internal'; request_process 'Request to Clinical Analytics ... Access was not tested; no credentials or query run.'",
+          "severity": "major"
+         },
+         {
+          "code": "GOV-PURPOSE-LIMITATION",
+          "evidence": "wiki clinic_data_policy (last_edited 2025-02-01): 'Only daily counts by district (clinic.resp_visits_daily) may be used for this purpose.' Data Protection Office sign-off for aggregate use not found (unknowns).",
+          "severity": "major"
+         },
+         {
+          "code": "INT-NO-JOIN-KEY",
+          "evidence": "District described only as 'District of residence'; no district code list or boundary definition (schema.notes, spatial.code_system 'unknown'); joinability to traffic, weather or station data is unknown (quality_notes). Mapping is not documented, not stated as impossible.",
+          "severity": "major"
+         },
+         {
+          "code": "DQ-UNDOCUMENTED-SCHEMA",
+          "evidence": "Catalog gives no diagnosis or respiratory definition, and no units or coding-change notes (schema.notes; quality_notes: 'Diagnosis / respiratory definition ... not documented').",
+          "severity": "major"
+         }
+        ],
+        "conditions": [
+         "Clinical Analytics approves access for the production window (owner: Clinical Analytics).",
+         "Data Protection Office confirms in writing that aggregate daily district counts may be used for the live warning model (owner: Data Protection Office).",
+         "Clinical Analytics supplies the district code list, boundary definitions and a mapping to station or weather geography (owner: Clinical Analytics).",
+         "Clinical Analytics documents the respiratory definition and any coding change in 2022-2026, and confirms whether counts are by residence or clinic site (owner: Clinical Analytics)."
+        ],
+        "rationale": "Rule 8: the source serves N4 (should) for production only (catalog start 2022-01-01, open-ended, daily). It does not cover the prototype window, which is not required for N4. No blocker is present. The policy permits this aggregate table, so GOV-PURPOSE-LIMITATION is a condition, not a block. Majors are access, purpose sign-off, the missing district key and the undocumented definition, each with an owner. Verdict is feasible_with_conditions.",
+        "who_can_resolve": [
+         "Clinical Analytics",
+         "Data Protection Office"
+        ]
+       },
+       {
+        "source_id": "internal.traffic.hourly_counts",
+        "verdict": "feasible_with_conditions",
+        "red_flags": [
+         {
+          "code": "ACC-RESTRICTED",
+          "evidence": "access.auth_required=true; classification 'internal'; request_process 'Request to the Mobility Office'; reachable null (not tested).",
+          "severity": "major"
+         },
+         {
+          "code": "GOV-CATALOG-WIKI-CONFLICT",
+          "evidence": "Wiki counter_replacement_2024 (last_edited 2024-04-02): 'On 2024-03-18 the road counters were replaced ... From 2024-03-18, counts are both directions combined ... Do not compare counts across the change without adjusting for it. The catalog entry ... has no note about this.'",
+          "severity": "major"
+         },
+         {
+          "code": "INT-NO-JOIN-KEY",
+          "evidence": "Counter-to-station mapping not documented: 'No documented mapping from counter_id to monitoring station, road segment or distance' (quality_notes); catalog has no station, segment or coordinate fields.",
+          "severity": "major"
+         },
+         {
+          "code": "DQ-DST-ARTEFACTS",
+          "evidence": "ts_local 'Hour start, local time'; timezone not stated (unknowns); quality_notes: 'air-quality feeds in UTC require DST-aware conversion for hourly joins'.",
+          "severity": "minor"
+         }
+        ],
+        "conditions": [
+         "Mobility Office approves access for the production window (owner: Mobility Office).",
+         "Mobility Office supplies the counter-to-station mapping with distances, so N2 'near the monitoring stations' can be verified (owner: Mobility Office).",
+         "Adjust counts at the 2024-03-18 change, or model pre- and post-change periods separately (owner: Mobility Office with the analytics team).",
+         "Mobility Office confirms the timezone of ts_local and the DST handling before joining to UTC data (owner: Mobility Office)."
+        ],
+        "rationale": "Rule 6/8: the source is the only candidate for N2 (must, production). Its catalog coverage (2021-01-01, open-ended, hourly) spans the production window. The counter basis change inside the window is a known-date definition change, handled by a condition. The mapping gap is not documented, so it is unknown rather than impossible, and the owner can supply it. No blocker. Verdict feasible_with_conditions.",
+        "who_can_resolve": [
+         "Mobility Office",
+         "analytics team"
+        ]
+       },
+       {
+        "source_id": "link.data_open_air_chicago_hour_aggre_d4970b",
+        "verdict": "not_feasible",
+        "red_flags": [
+         {
+          "code": "ACC-UNREACHABLE",
+          "evidence": "inspect_dataset_link on https://catalog.data.gov/dataset/open-air-chicago-hour-aggregations returned DOMAIN_NOT_ALLOWLISTED (provenance; access.reachable=false).",
+          "severity": "blocker"
+         },
+         {
+          "code": "LIC-UNKNOWN",
+          "evidence": "No licence statement could be read (licence.evidence); name null, publisher null.",
+          "severity": "blocker"
+         },
+         {
+          "code": "COV-GEO-MISMATCH",
+          "evidence": "spatial.coverage 'US' (inferred from link title, Chicago); use case primary geography is IT.",
+          "severity": "major"
+         }
+        ],
+        "conditions": [
+         "None achievable within the project. Host approval for catalog.data.gov would be needed, and the geography mismatch would still remain."
+        ],
+        "rationale": "Rule 1: ACC-UNREACHABLE (host not allowlisted, refusal recorded) and LIC-UNKNOWN with no terms page readable mean not_feasible regardless of data quality. The US geography is a further mismatch for the Italian prototype. Neither blocker is dismissed.",
+        "who_can_resolve": []
+       },
+       {
+        "source_id": "link.europa_sdg_11_52_099aa6",
+        "verdict": "feasible_with_conditions",
+        "red_flags": [
+         {
+          "code": "LIC-UNKNOWN",
+          "evidence": "licence.evidence: 'Not found'; probe of https://ec.europa.eu/eurostat/about/policies/copyright redirected to an EU Login page with no licence text; Eurostat not in external register.",
+          "severity": "blocker"
+         },
+         {
+          "code": "COV-PARTIAL-WINDOW",
+          "evidence": "Covers 2005-01-01..2023-12-31; prototype 24% covered, production 0% covered (rule_flags evidence).",
+          "severity": "major"
+         },
+         {
+          "code": "DQ-UNDOCUMENTED-SCHEMA",
+          "evidence": "Rate unit 'RT: Rate' with denominator 'not stated in the summary' (quality_notes; unknowns: 'Denominator for the RT (rate) unit is not stated').",
+          "severity": "major"
+         },
+         {
+          "code": "DQ-METADATA-CONTRADICTION",
+          "evidence": "declared_metadata.warnings ['TIME_GAPS']; time dimension lists 18 years with 2006 absent (quality_notes). Gap is not documented.",
+          "severity": "minor"
+         }
+        ],
+        "conditions": [
+         "Legal confirms the terms at https://ec.europa.eu/eurostat/about/policies/copyright (owner: Legal). The publisher is an official body and a copyright page exists, so the LIC-UNKNOWN blocker is resolvable.",
+         "Use only the NR (number) unit, or obtain the rate denominator from Eurostat documentation before using RT values (owner: analytics team).",
+         "Treat the 2006 gap as missing, not zero (owner: analytics team).",
+         "Use only as national annual context for N6; the production window is not covered and must be stated as a gap (owner: analytics team)."
+        ],
+        "rationale": "Rule 2 applies: LIC-UNKNOWN from an official publisher with a copyright page that exists (unreadable) is resolvable by Legal. COV-PARTIAL-WINDOW alone does not give not_feasible, and the source serves N6 (could, annual context), which is acceptable at national grain. Out-of-window is not triggered because the prototype window overlaps 2005. Verdict feasible_with_conditions.",
+        "who_can_resolve": [
+         "Legal",
+         "analytics team"
+        ]
+       },
+       {
+        "source_id": "link.lombardia_6eu4_4tja_097de4",
+        "verdict": "feasible_with_conditions",
+        "red_flags": [
+         {
+          "code": "COV-GEO-MISMATCH",
+          "evidence": "spatial.notes: 'Sensors are in Lombardy ... The use-case spec does not state the client site is in Lombardy; coverage of the client's city is unknown.'",
+          "severity": "major"
+         },
+         {
+          "code": "GOV-PURPOSE-LIMITATION",
+          "evidence": "policy.open_data_links (list_external_register): open-data portal datasets allowed 'for prototyping, benchmarking and context only; production needs Legal sign-off' (licence.evidence).",
+          "severity": "major"
+         },
+         {
+          "code": "DQ-UNDOCUMENTED-SCHEMA",
+          "evidence": "Stato is 'VA' in sampled rows only; 'Meaning of other Stato codes is not documented on the landing page' (quality_notes; unknowns).",
+          "severity": "major"
+         },
+         {
+          "code": "DQ-METADATA-CONTRADICTION",
+          "evidence": "Candidate note says 'half-hourly steps' and 'Small queries show it runs 1987-11-25 to 2011-01-01, with 178 sensors reporting between 2004-03-10 and 2005-04-04'; the sample shows hourly steps (quality_notes: 'the half-hourly claim is not supported') and the start/sensor count were not verified (quality_notes).",
+          "severity": "major"
+         }
+        ],
+        "conditions": [
+         "Use only for prototype-window benchmarking of reanalysis bias, not for the client's own site. Legal sign-off is required before any production use (owner: Legal).",
+         "Profile the file for 2004-03-10 to 2005-04-04 and confirm the sensor count and hourly grain before relying on the window (owner: analytics team).",
+         "ARPA Lombardia (or the open-data portal) supplies the Stato code list (owner: ARPA Lombardia).",
+         "State the Lombardy geography as an assumption in the method; Valdena site coverage is unknown (owner: Valdena Civic Health Office)."
+        ],
+        "rationale": "Rule 10 applies: a different region is acceptable for a benchmark or context use, with the assumption stated. The source is temperature only. Humidity is a separate dataset not profiled, so N3 humidity is not met by this source. No blocker (CC0, agreement not required). Majors each have a condition with an owner, so the verdict is feasible_with_conditions and it serves the prototype window only, not production (2010 end).",
+        "who_can_resolve": [
+         "analytics team",
+         "Legal",
+         "ARPA Lombardia",
+         "Valdena Civic Health Office"
+        ]
+       },
+       {
+        "source_id": "link.uci_360",
+        "verdict": "feasible_with_conditions",
+        "red_flags": [
+         {
+          "code": "LIC-NONCOMMERCIAL",
+          "evidence": "licence.name 'CC BY 4.0 (per UCI page) - conflicts with research-only statement in dataset notes'; documentation_excerpts: 'This dataset can be used exclusively for research purposes. Commercial purposes are fully excluded.' Commercial use 'unknown'.",
+          "severity": "blocker"
+         },
+         {
+          "code": "LIC-ATTRIBUTION",
+          "evidence": "Licence 'CC BY 4.0 (per UCI page)'; attribution_text 'Saverio Vito; cite De Vito et al., Sens. and Act. B, Vol. 129, 2, 2008'.",
+          "severity": "minor"
+         },
+         {
+          "code": "FRS-STALE",
+          "evidence": "Data ends 2005-04-04, more than 5 years before as_of 2026-10-15 (cutoff 2021-10-15).",
+          "severity": "major"
+         },
+         {
+          "code": "DQ-METADATA-CONTRADICTION",
+          "evidence": "declared_metadata.has_missing_values='no', but the documentation says: 'Missing values are tagged with -200 value.'",
+          "severity": "major"
+         },
+         {
+          "code": "DQ-SENTINEL-VALUES",
+          "evidence": "-200 used as missing in most columns (NMHC(GT) 8,443 cells; NOx(GT) and NO2(GT) about 1,640 each; CO(GT) 1,592; sensors, T, RH, AH 366 each); 'C6H6(GT) ... 366 values equal -200 (counted as negatives)' (quality_notes).",
+          "severity": "major"
+         },
+         {
+          "code": "COV-GEO-MISMATCH",
+          "evidence": "spatial.notes / quality_notes: 'The city is not named ... Location cannot be confirmed from this source, so it cannot be matched to Valdena.'",
+          "severity": "major"
+         },
+         {
+          "code": "INT-REPRESENTATIVENESS",
+          "evidence": "Single site: 'Reference values are from one co-located analyser at one site' and road-level 'significantly polluted area' (quality_notes; spatial.notes 'Single site').",
+          "severity": "major"
+         }
+        ],
+        "conditions": [
+         "Legal review of the licence conflict (CC BY 4.0 versus research-only, commercial use excluded) before any use beyond prototyping; the source targets only the prototype window (owner: Legal).",
+         "Recode -200 to missing in all columns, including C6H6(GT) and CO(GT) negatives, before any statistics (owner: analytics team).",
+         "Use only for method development on the prototype window, with the single-site and unnamed-city limitations stated; do not treat as representative of Valdena (owner: analytics team).",
+         "Dismiss FRS-STALE: target window prototype (2004-03-10 to 2005-04-04) is itself historical, so staleness does not apply.",
+         "Keep the attribution 'Saverio Vito; De Vito et al., Sens. and Act. B, Vol. 129, 2, 2008' in outputs (informational)."
+        ],
+        "rationale": "Rule 2 applies: LIC-NONCOMMERCIAL is a research-purpose note on a prototype-only, public-sector benchmark, so Legal review is the resolvable path, not not_feasible. The file fully covers the prototype window for N1 (hourly NO2). FRS-STALE is dismissed under rule 5. The -200 sentinel and metadata contradiction are fixable conditions. Verdict feasible_with_conditions.",
+        "who_can_resolve": [
+         "Legal",
+         "analytics team"
+        ]
+       }
+      ],
+      "overall_verdict": "feasible_with_conditions",
+      "overall_rationale": "All must needs (N1, N2, N3) have at least one source that serves them with conditions only. N1 is covered for prototype by the UCI single-site research file (conditions: Legal review of the research-only licence, -200 recoding) and for production by the city station readings (access approval; VR-03 exclusion). N2 (production) depends solely on the Mobility Office traffic counts (access, counter-basis change, counter-to-station mapping). N3 is covered for both windows by Open-Meteo (Legal sign-off, Valdena coordinates), with a Lombardy temperature series as prototype benchmark only. N4 (should) is covered by the clinic daily counts with purpose sign-off and key mapping. N5 (could) is unmet because the clinic policy permits only aggregates. N6 (could) is partially met with national annual data covering only 2005. Chicago link is not feasible (ACC-UNREACHABLE, LIC-UNKNOWN), so no must need relies on it.",
+      "need_coverage": [
+       {
+        "need_id": "N1",
+        "status": "met_with_conditions",
+        "best_sources": [
+         "link.uci_360 (prototype)",
+         "internal.airq.station_readings (production)"
+        ],
+        "gap": "Prototype is covered only by a single-site, unnamed-city research file under Legal review; production depends on restricted access and an unverified VR-03/continuity status."
+       },
+       {
+        "need_id": "N2",
+        "status": "met_with_conditions",
+        "best_sources": [
+         "internal.traffic.hourly_counts"
+        ],
+        "gap": "Only candidate; counter-to-station mapping is undocumented and the counter basis changed on 2024-03-18."
+       },
+       {
+        "need_id": "N3",
+        "status": "met_with_conditions",
+        "best_sources": [
+         "api.open_meteo_archive (prototype and production)",
+         "link.lombardia_6eu4_4tja_097de4 (prototype, temperature only)"
+        ],
+        "gap": "Open-Meteo is a modelled grid cell with no Valdena coordinates; humidity for the prototype window from the Lombardy source is not profiled; production has no humidity source except Open-Meteo."
+       },
+       {
+        "need_id": "N4",
+        "status": "met_with_conditions",
+        "best_sources": [
+         "internal.clinic.resp_visits_daily"
+        ],
+        "gap": "Production only; district code list, respiratory definition and Data Protection Office sign-off are missing; no prototype coverage needed."
+       },
+       {
+        "need_id": "N5",
+        "status": "unmet",
+        "best_sources": [],
+        "gap": "Clinic policy permits only the aggregate daily-by-district table; no patient-level source is permitted or offered."
+       },
+       {
+        "need_id": "N6",
+        "status": "partially_met",
+        "best_sources": [
+         "link.europa_sdg_11_52_099aa6"
+        ],
+        "gap": "Annual national data reaches only 2005 within the prototype window and nothing for 2024-2025; rate denominator undocumented and 2006 is absent."
+       }
+      ]
+     },
+     "name": "submit_risk_assessment",
+     "type": "tool_use"
+    }
+   ]
+  }
+ ]
+}

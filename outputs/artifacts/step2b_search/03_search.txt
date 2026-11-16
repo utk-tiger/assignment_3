@@ -1,0 +1,62 @@
+Model: gemini-3.8-flash
+Query: Open data hourly air temperature and relative humidity observations from ARPA weather stations in northern Italy (Veneto or Lombardy) for 2004-2005 and 2024-2025: exact dataset page URL, licence and period covered.
+
+For open data hourly observations of **air temperature** (*temperatura dell'aria*) and **relative humidity** (*umidità relativa*) spanning both historical (2004–2005) and recent (2024–2025) periods, **ARPA Lombardia** provides complete coverage. 
+
+*(Note: While ARPA Veneto provides open data, its online hourly automated download portal only starts from January 1, 2010; ARPA Lombardia covers both periods).*
+
+---
+
+### ARPA Lombardia (Lombardy)
+
+#### 1. Exact Dataset Page URLs
+ARPA Lombardia publishes its meteorological data on the official Open Data portal of Regione Lombardia and through its dedicated open extraction service:
+
+* **Regional Open Data Hub (ARPA Lombardia Monitoring):**  
+  [https://www.dati.lombardia.it/stories/s/auv9-c2sj](https://www.dati.lombardia.it/stories/s/auv9-c2sj)  
+  *(Under the section **Idro-Nivo-Meteo → Dati Storici**, individual datasets are partitioned by variable and time period: `Temperatura fino al 2010`, `Temperatura dal 2021`, `Umidità Relativa fino al 2010`, and `Umidità Relativa dal 2021`).*
+* **Live / Rolling Window Sensor Stream:**  
+  [https://www.dati.lombardia.it/Ambiente/Dati-sensori-meteo/647i-nhxk](https://www.dati.lombardia.it/Ambiente/Dati-sensori-meteo/647i-nhxk)
+* **ARPA Lombardia Official Direct Data Service (*Richiesta Dati Misurati*):**  
+  [https://www.arpalombardia.it/temi-ambientali/meteo-e-clima/richiesta-dati-misurati/](https://www.arpalombardia.it/temi-ambientali/meteo-e-clima/richiesta-dati-misurati/)  
+  *(Enables automated extraction of full multiannual hourly and sub-hourly series for any sensor directly into CSV format).*
+
+#### 2. Licence
+* **Creative Commons 1.0 Universal (CC0 1.0 - Public Domain Dedication)** on `dati.lombardia.it`.
+
+#### 3. Period Covered
+* **From station installation (late 1980s / 1990s / early 2000s depending on the station) to present (updated continuously)**:
+  * **2004–2005**: Covered under the *fino al 2010* historical archive.
+  * **2024–2025**: Covered under the *dal 2021* archive and the rolling/near-real-time sensor dataset.
+
+---
+
+### Alternative: ARPA Veneto (ARPAV)
+If working with Veneto data:
+* **Hourly Data Tool:** [ARPA Veneto Dati meteorologici orari](https://www.arpa.veneto.it/temi-ambientali/meteo-idro-nivo/dati-meteorologici-orari)
+* **Licence:** Creative Commons Attribution 4.0 International (**CC BY 4.0**).
+* **Period Covered:** **January 1, 2010 to present**. *(Veneto covers 2024–2025 hourly, but 2004–2005 is only available online as monthly/annual aggregates, requiring a direct formal archive request to ARPAV for sub-2010 hourly series).*
+
+Citations:
+  [1] arpa.veneto.it: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFJaTwGEEnFA6PRstvzLyIHVLD-F6L7Ux2hvds2WNSGBwgmJJSrjSAPuGr0r5vxw76-4CMwTpENvRaHY6DKKAAfbiC7iT-r4YjKvK27ME_dH3X_xp9UYiOfUZjhGv3RO125Hda4SbohU0A_LxD5P6LvQMyBZ7Wfbq8wzxH9UxIRryvu9V2YxbRDc3pAN7uKgcNlHPlOL1InTg==
+       supports: e: While ARPA Veneto provides open data, its online hourly automated download portal only starts from January 1, 2010; ARP
+       supports: Tool:** [ARPA Veneto Dati meteorologici orari](https://www.arpa.veneto.it/temi-ambientali/meteo-idro-nivo/dati-meteorologici-orari) * **Licence:
+       supports: red:** **January 1, 2010 to present**. *(Veneto co
+  [2] arpalombardia.it: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHY4xdq3BbfTIvfqP6nx_wwGhF9CRZqLtbcOAFabkPDPZ-p_mNKaAQQbykFRVWD_C3nT1mDAYPWJuMvsZhbEoFGoJY1WDHaWM_5wi5xaJU8lBQZmAn-mcY6n0wHOUtbrjy3n9tZswgABrYWjT4QaZQHXdwFZoGwfAspzermRI5EbE_EEaR39VeV7tc=
+       supports: e: While ARPA Veneto provides open data, its online hourly automated download portal only starts from January 1, 2010; ARPA Lombardia covers both periods).*
+       supports: www.arpalombardia.it/temi-ambientali/meteo-e-clima/richiesta-dati-misurati/](https://www.arpalombardia.it/temi-ambientali/meteo-e-clima/richiesta-dati-misurati/) *(En
+       supports: automated extraction of full multiannual hourly and sub-hourly series for any sensor directly into CSV format).* ####
+  [3] dati.lombardia.it: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEl_y9Tg_jmuVTyL4bJ3tEksW8sfNgdd138H-DYg9G80l6GtBaQzmw-tEyRD9rWqolbwXU8QC8uENpqZq10hgZ1xVMcSmyHO0j8iKnaeMP-woArZ16YBtMUS9IDIyMfvoGyrG49n0X-ovsfGQJQMBanCiV0QOuo9YP-XISujYBVYsbCLM6a6XgmGNM5LgjRMISRsh0dUXzCq3ejXas=
+       supports: s://www.dati.lombardia.it/stories/s/auv9-c2sj](https://www.dati.lombardia.it/stories/s/auv9-c2sj)
+       supports: er the section **Idro-Nivo-Meteo → Dati Storici**, individual datasets are partitioned by variable and time period: `Temperatura fino al 2010`, `Temperatura dal 2021`, `Umidità Relativa fino al 2010`,
+       supports: 05**: Covered under the *fino al 2010* historical archive. * **202
+  [4] mdpi.com: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQElG29wBbM6ETZFVnPHTPNGJFKZpJ_wmujblsSSSmktfbELLpt2RohlkWqfzq2UsSJ8gCQq8SBtAZ6bYAE6O3botoUDBkwba8Do7t26zTWOx08WRRHroV3wKZDInQjSog5jrQ==
+       supports: www.dati.lombardia.it/Ambiente/Dati-sensori-meteo/647i-nhxk](https://www.dati.lombardia.it/Ambiente/Dati-sensori-meteo/647i-nhxk) * **ARPA
+  [5] dati.lombardia.it: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEGzWqlSplWzXmzYXxawavagxYswSuWVoRoTCd3c2bgsKWBBogpsB8eMNiZikqMpjS76wl9B4BsOpJ0xbTOxDlSgDIU1n0VB_g2n6z2Y4Uq8uXm6j6JLKXFLWfYfY8k5j_QRiSEF8msCRNcQhl2LQRRO2GiPgc6pm_QhXQhDQk=
+       supports: e Commons 1.0 Universal (CC0 1.0 - Public Domain Dedication)** on `dati.lombardia.it`. #### 3
+  [6] huggingface.co: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEjF06BgEzO1ROrmsagEYQkOAJc4H9QT-qmyWidI3EonTbf1HOSrhwApBk4bjwF6iGZBOIHrJ9mha0fnWsNveOoCjsyYpOKOh0zMMi1OiAaZYTWLCEIO6ASTm_Hgbc59-8JvbdsIGk707voLr_gCW8xM4RFumpikMzqGvd3xtcZIEajyMdB0VM89YgBt4dEVlBy19E=
+       supports: **: Covered under the *dal 2021* archive and the rolling/near-real-time sensor dataset. --- ### A
+  [7] dati.veneto.it: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGYSum8LYZ9GdTGq5PC9CZKRmNmRYRuEsODFIFRCHWzWUut-8s4jzlwunxJMR8XIcd7sgaHm9v2F-3OJXjE1nfN2UXZPPGCyRWU04Xvf_dWnUrmp8WI_Bggy5mnFC5hnAbi194iaot0JZFRA6f_T9unpKZBmptA_S2qFbI=
+       supports: Creative Commons Attribution 4.0 International (**CC BY 4.0**). * **Period
+  [8] arpa.veneto.it: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHN9HsvrIrQ8GeGfA21kMIBmBAAIU2m2HkHHOmKQRT13bkREuUPdtLOApT8DgZ7FvJuHCXDfdm004oUtmK2FFsZLp2z5pLcMiSEgQ0QmEEdC_0WgnbH46tWXgBwzLb-3N0KjY-hgcY6V7bVrb3sRPIJbNybeSUJ8u-66kGbxMqpFrzndHuplAXsKxa_xU-sXYTMQZSgFyObB7o=
+       supports: rs 2024–2025 hourly, but 2004–2005 is only available online as monthly/annual aggregates, requiring a dir

@@ -1,0 +1,61 @@
+{
+  "_comment": "UC2 memo review and sign-off, 2026-11-16. Verdict 'stop' means stop as scoped; conditions below are what would reopen it. Full reasoning and evidence: outputs/artifacts/review_UC2.md.",
+  "reviewer": "utkarshyogeshsaxena",
+  "verdict": "stop",
+  "conditions": [
+    {
+      "text": "To reopen: client decides whether total-level or per-code-era analysis is acceptable (N2 demoted from must) and records it in decisions.md.",
+      "owner": "Valdena Gelato Shop (analytics lead)",
+      "due": "2026-12-11"
+    },
+    {
+      "text": "To reopen: Retail Operations confirms whether a pre-2024 product master or code mapping exists, or signs off a reviewed name crosswalk for uniquely named products.",
+      "owner": "Retail Operations",
+      "due": "2026-12-11"
+    },
+    {
+      "text": "If reopened: buy the Open-Meteo commercial plan with Legal approval; Legal reconciles the register entry with https://open-meteo.com/en/terms and confirms the Nager.Date data terms (MIT covers the code only).",
+      "owner": "Client procurement; Legal",
+      "due": "2027-01-15"
+    },
+    {
+      "text": "If reopened: client confirms the Verona (45.44, 10.99) location assumption; probe the history window (summer 2023) at that point, since only 2026-03-25..2026-03-31 was probed (trace line 38).",
+      "owner": "Valdena Gelato Shop; analyst team",
+      "due": "2026-12-18"
+    },
+    {
+      "text": "If reopened: grant sales access; treat 2024-02-05..2024-03-10 as missing, not zero; confirm primary measure and calendar row-count and is_open rules.",
+      "owner": "Retail Operations; Store Operations",
+      "due": "2027-01-15"
+    }
+  ],
+  "agreements": [
+    {
+      "source_id": "internal.sales.products",
+      "reason": "Wiki product_codes_2024 states 'No mapping table exists between the old and new codes' and names are not unique; schema.notes shows no legacy code column. Rule 7 applies to a documented impossibility, so not_feasible and N2 (must) unmet are correct, making the overall verdict not_feasible."
+    },
+    {
+      "source_id": "internal.sales.daily_by_product",
+      "reason": "N1 partially_met is right: sales are by product but the history window straddles the 2024-04-01 code change, and wiki till_migration_2024 documents no rows 2024-02-05..2024-03-10, which the memo treats as missing, not zero."
+    },
+    {
+      "source_id": "api.nager_public_holidays",
+      "reason": "Data licence correctly left unknown (MIT on GitHub covers the code); register entry makes it resolvable by Legal under rule 2 v2; probes for 2023-2026 cover both windows."
+    },
+    {
+      "source_id": "internal.store.calendar",
+      "reason": "About 1,500 rows vs about 1,744 days and undocumented is_open/event_name justify feasible_with_conditions with Store Operations as owner."
+    }
+  ],
+  "overrides": [
+    {
+      "source_id": "api.open_meteo_archive",
+      "reason": "Licence handling is right (free API non-commercial, paid plan needed), but the memo says the shop city is unset though decisions.md records Verona (45.44, 10.99) and the probe used it (trace line 38); its 'covers the history window' claim is from docs only, as no 2023-2025 data was probed; FRS-METADATA-DATE-MISLEADING is a page fetch-date, not a data date, and should be dropped."
+    }
+  ],
+  "traced_conclusion": {
+    "source_id": "internal.sales.products",
+    "record_field": "schema.notes",
+    "could_change_if": "Retail Operations finds a pre-2024 product master or old-to-new mapping, signs off a reviewed crosswalk for uniquely named products, or the client re-scopes so cross-2024 product linkage is no longer a must need."
+  }
+}

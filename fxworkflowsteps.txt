@@ -1,0 +1,109 @@
+FX Workflow Steps
+
+Stage
+
+Guidance
+
+Skills
+
+Project setup and tooling verification
+
+00 Skills
+
+set up the git repository, virtual environment, and gateway credentials. Run the baseline test suite (pytest tests/ -q) to confirm existing passing tests and verify the 20 initial failing gap tests before build work starts.
+
+—
+
+Tiger OS workflow and skill initialization
+
+00 Skills
+
+paste the prompt into Tiger OS to generate the project workflow view, then initialize the /data-discovery-agent skill in Claude Code to execute initial setup checks (Step 0) and generate outputs/artifacts/step0_checks.md.
+
+—
+
+Stage 1 planning and scouting
+
+01 Skills
+
+run the agent pipeline through the Plan and Scout stages for the target use case (python -m discovery_agent run --use-case UC1 --stop-after scout --no-input) to search internal catalogs, wikis, and external registers, then output the unmet data needs table.
+
+data-discovery-agent
+
+External source suggestion & Step 2b evaluation
+
+00 Skills
+
+request external source suggestions for unmet needs, inspect publisher pages directly to verify actual coverage and terms, and document accept/reject decisions with reasons in outputs/artifacts/decisions.md.
+
+—
+
+Candidate link inspection & gate decisions
+
+00 Skills
+
+inspect supplied external dataset links without LLM assistance using the CLI inspection tool, then draft outputs/UC1/gate_decisions.json providing a clear justification (≥20 chars) for each accepted or rejected link.
+
+—
+
+Tool extractor and deterministic rules implementation (G1, G3, G4)
+
+00 Skills
+
+implement licensing extraction (extract_licence), JSON-stat format summarization (jsonstat_summary), and deterministic feasibility rules (window coverage/staleness, grain mismatches, metadata contradictions). Verify implementation using pytest tests/test_learner_gaps.py.
+
+—
+
+Risk assessor prompt calibration & strict allowlisting (G5, G6)
+
+00 Skills
+
+write verdict calibration rules in prompts/risk_assessor.md and enforce minimal exact-host allowlists in config/allowlist.json. Document edge cases, calibration rationale, and host justifications in outputs/artifacts/decisions.md.
+
+—
+
+Trace audit and agent error diagnosis (G7)
+
+00 Skills
+
+audit execution traces (trace.jsonl) and agent transcripts (transcripts/) to identify a root-cause agent mistake. Implement prompt, tool, or validator fixes, re-run from the affected stage, and document before/after evidence in outputs/artifacts/decisions.md.
+
+—
+
+End-to-end pipeline execution
+
+00 Skills
+
+execute full end-to-end runs for all use cases (python -m discovery_agent run --use-case UC1 and UC2) using stage flags (--from-stage, --only), ensuring all candidate gate decisions are strictly respected and traces/transcripts are generated.
+
+—
+
+Feasibility memo review and formal sign-off
+
+00 Skills
+
+review generated feasibility memos against traces, author human memo review reports (review_UC1.md, review_UC2.md), create formal sign-off records (signoff.json), and run python -m discovery_agent check UCx until zero errors remain.
+
+—
+
+Skill file extension and reuse check
+
+00 Skills
+
+extend .claude/skills/data-discovery-agent/SKILL.md with concrete instructions for Steps 3–5 (Profile, Assess, Sign-off). Validate skill reusability by running Steps 0–2b on a fresh session for UC2 and complete all questions in README.md Submission Notes.
+
+—
+
+Self-review, rubric completion, and package handoff
+
+00 Skills
+
+complete all learner-facing cells in the Evaluation Rubric spreadsheet (Stack AI Rewire - DS - Data Discovery - Evaluation Rubric.xlsx), clean up non-essential files/secrets, and assemble the final submission zip file (empid_emp_name_data_discovery.zip).
+
+—
+
+Skill
+
+FX Assignment
+
+Additional Skills

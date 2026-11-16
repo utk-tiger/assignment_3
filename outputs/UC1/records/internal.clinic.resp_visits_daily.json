@@ -1,0 +1,121 @@
+{
+  "source_id": "internal.clinic.resp_visits_daily",
+  "kind": "internal",
+  "title": "Respiratory visits (daily, by district)",
+  "summary": "Internal aggregate table of respiratory clinic visit counts per day and per district (columns visit_date, district, visit_count; about 40,000 rows per catalog). Catalog states no patient identifiers and an open-ended daily refresh from 2022-01-01, last refreshed 2026-10-14. It is the only clinic source the Clinic data policy permits for this analysis, so it can serve N4 for the production window only; it does not cover the prototype window and does not meet N5 (patient-level).",
+  "schema": {
+    "documented": "structured",
+    "field_count": 3,
+    "fields": [
+      {
+        "name": "visit_date",
+        "type": "date",
+        "description": "Day of the visits",
+        "pii": false
+      },
+      {
+        "name": "district",
+        "type": "string",
+        "description": "District of residence",
+        "pii": false
+      },
+      {
+        "name": "visit_count",
+        "type": "integer",
+        "description": "Respiratory visits that day",
+        "pii": false
+      }
+    ],
+    "notes": "Catalog gives no diagnosis or respiratory definition, no district code list, and no units or coding-change notes."
+  },
+  "temporal": {
+    "start": "2022-01-01",
+    "end": null,
+    "grain": "daily",
+    "metadata_last_updated": "2026-10-14",
+    "open_ended": true,
+    "refresh_cadence": "daily"
+  },
+  "spatial": {
+    "coverage": [
+      "IT"
+    ],
+    "code_system": "unknown",
+    "notes": "District is described only as 'District of residence'; no code list or boundary definition found. Coverage assumed to be the client's city area (Valdena, fictional); not stated in the catalog entry."
+  },
+  "ownership": {
+    "owner": "Clinical Analytics",
+    "publisher": null,
+    "steward": "Chiara Conti"
+  },
+  "licence": {
+    "name": "internal",
+    "evidence": "catalog entry classification 'internal' (get_catalog_entry internal.clinic.resp_visits_daily); no licence field in catalog",
+    "commercial_use": "not_applicable",
+    "agreement_status": null,
+    "attribution_text": null,
+    "mixed_sources": false,
+    "url": null
+  },
+  "access": {
+    "method": "warehouse_sql",
+    "auth_required": true,
+    "reachable": null,
+    "classification": "internal",
+    "approx_size_bytes": null,
+    "request_process": "Request to Clinical Analytics (catalog access.request_process). Access was not tested; no credentials or query run."
+  },
+  "declared_metadata": {
+    "contains_pii": false,
+    "classification": "internal",
+    "status": "active",
+    "grain": "daily",
+    "row_count_approx": 40000,
+    "refresh_cadence": "daily"
+  },
+  "documentation_excerpts": [
+    "Respiratory clinic visits counted per day and per district. Contains no patient identifiers. (catalog description)",
+    "Only daily counts by district (`clinic.resp_visits_daily`) may be used for this purpose. (wiki clinic_data_policy, last_edited 2025-02-01, owner Data Protection Office)",
+    "Patient postcode and age band are personal data. They must not leave the clinic systems for analysis. (wiki clinic_data_policy)"
+  ],
+  "quality_notes": [
+    "Sample not possible: no data file was sampled (warehouse table only, access not tested). Sample-based checks on sentinels, zeros and date gaps are therefore outstanding.",
+    "Candidate suspected issue 'small-cell suppression threshold not set in any source (Legal open question)' could not be verified: the clinic_data_policy wiki page (last_edited 2025-02-01) does not mention a suppression threshold, and a catalog search found no Legal open-question page. Treat as unconfirmed.",
+    "Candidate suspected issue 'no stated consent/sign-off record found' is consistent with the wiki and catalog, which contain none, but no sign-off record was searched for beyond the catalog and the policy page.",
+    "Diagnosis / respiratory definition and any coding change mid-period are not documented in the catalog or the policy page (unverified).",
+    "District code system and boundary changes are not documented; joinability to traffic, weather or pollution stations is unknown.",
+    "Catalog row_count_approx of about 40,000 is not reconciled with 2022-to-present daily x district grain; actual row count and gaps are unknown.",
+    "Policy is restrictive: the table is the only permitted clinic source, and the policy's personal-data restriction applies to patient-level data, not to this aggregate table.",
+    "Temporal fit: covers the production window (2024-01-01 to 2025-12-31) per catalog start 2022-01-01; does not cover the prototype window 2004-03-10 to 2005-04-04."
+  ],
+  "provenance": [
+    {
+      "claim": "Table is daily counts by district with columns visit_date, district, visit_count; contains no patient identifiers; owner Clinical Analytics; steward Chiara Conti; coverage from 2022-01-01, open-ended, daily refresh, last refreshed 2026-10-14",
+      "evidence": "get_catalog_entry internal.clinic.resp_visits_daily"
+    },
+    {
+      "claim": "This table is the only permitted clinic source for the analysis (daily district counts); patient-level table is not permitted; postcode and age band are personal data",
+      "evidence": "read_wiki_page clinic_data_policy (last_edited 2025-02-01, owner Data Protection Office)"
+    },
+    {
+      "claim": "No small-cell suppression threshold or respiratory definition found in the policy page; no Legal open-question page surfaced",
+      "evidence": "read_wiki_page clinic_data_policy; search_internal_catalog 'respiratory visits district small cell suppression threshold coding'"
+    },
+    {
+      "claim": "Access route is a request to Clinical Analytics via warehouse SQL",
+      "evidence": "get_catalog_entry internal.clinic.resp_visits_daily (access.method, request_process)"
+    }
+  ],
+  "unknowns": [
+    "Respiratory diagnosis definition (ICD or other codes) and whether it changed during 2022-2026",
+    "District code system, district list, and boundary changes",
+    "Small-cell suppression threshold (the candidate cites a Legal open question not found in the sources read)",
+    "Actual row count, date gaps and reporting completeness",
+    "Whether the table is reachable and what access approval is needed (access not tested)",
+    "Whether the Data Protection Office signed off aggregate use for this purpose (no record found)",
+    "Spatial coverage beyond the assumed client city area",
+    "Whether counts are by residence or by clinic site (catalog says 'District of residence')",
+    "Refresh reliability: whether the daily refresh has been consistent since 2022"
+  ],
+  "status": "active"
+}

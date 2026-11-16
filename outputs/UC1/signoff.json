@@ -1,0 +1,93 @@
+{
+  "_comment": "UC1 memo review and sign-off, 2026-11-16. Full reasoning and evidence: outputs/artifacts/review_UC1.md.",
+  "reviewer": "utkarshyogeshsaxena",
+  "verdict": "proceed_with_conditions",
+  "conditions": [
+    {
+      "text": "Legal confirms UCI 360 may be used only for non-commercial, research-style prototype method building (research-only note vs CC BY 4.0 link), never in production.",
+      "owner": "Legal",
+      "due": "2026-12-04"
+    },
+    {
+      "text": "Recode -200 to missing in every UCI 360 column including C6H6(GT) (366 sentinels the sampler missed); check the 91 negative non-sentinel CO(GT) values; prototype pollutant is NO2 only (no PM2.5 in the file).",
+      "owner": "Analyst team",
+      "due": "2026-12-11"
+    },
+    {
+      "text": "Re-probe Open-Meteo at the recorded Verona assumption (45.44, 10.99) instead of the Milan point used (trace lines 40-43); client confirms or replaces the location; Legal confirms the use is non-commercial under https://open-meteo.com/en/terms (or a paid plan is bought) and confirms upstream C3S terms.",
+      "owner": "Analyst team; Valdena Civic Health Office; Legal",
+      "due": "2026-12-11"
+    },
+    {
+      "text": "Record the Eurostat licence from https://ec.europa.eu/eurostat/web/main/help/copyright-notice (reuse of statistical data authorised with source acknowledged), not the login-redirected /eurostat/about/policies/copyright; use sdg_11_52 as N6 context only with 2006 treated as missing.",
+      "owner": "Analyst team (Legal to note)",
+      "due": "2026-11-30"
+    },
+    {
+      "text": "Raise access requests for station readings, traffic counts and clinic counts and obtain turnaround dates.",
+      "owner": "Environment Monitoring Unit; Mobility Office; Clinical Analytics",
+      "due": "2026-12-18"
+    },
+    {
+      "text": "Supply the counter-to-station mapping and the ts_local timezone; decide adjustment vs break-modelling for the 2024-03-18 counter change.",
+      "owner": "Mobility Office with analyst team",
+      "due": "2027-01-15"
+    },
+    {
+      "text": "Confirm VR-03 end date (wiki: switched off 2024-06-30) and which stations report through 2025-12-31; reconcile the 4.2 million row count with the station count.",
+      "owner": "Environment Monitoring Unit",
+      "due": "2027-01-15"
+    },
+    {
+      "text": "Confirm clinic_data_policy (2025-02-01) is current; set the small-cell suppression rule, district code list and respiratory definition.",
+      "owner": "Data Protection Office; Clinical Analytics",
+      "due": "2027-01-15"
+    },
+    {
+      "text": "Confirm with a small filtered query that ARPA Lombardia 6eu4-4tja sensors report within 2004-03-10..2005-04-04 (temporal.start is null and the 2 MB sample never reached 2004); temperature benchmark only.",
+      "owner": "Analyst team",
+      "due": "2026-12-11"
+    }
+  ],
+  "agreements": [
+    {
+      "source_id": "internal.traffic.hourly_counts",
+      "reason": "After the G7 fix the mapping is 'unknown, not impossible' (quality_notes: 'No documented mapping'); GOV-CATALOG-WIKI-CONFLICT for the 2024-03-18 per-direction to combined change (wiki counter_replacement_2024) falls inside the production window and must be adjusted. feasible_with_conditions is right."
+    },
+    {
+      "source_id": "internal.airq.station_readings",
+      "reason": "Wiki station_network says VR-03 was switched off 2024-06-30 while the catalog says active with end null; excluding VR-03 after that date is the correct condition."
+    },
+    {
+      "source_id": "link.uci_360",
+      "reason": "temporal.start/end 2004-03-10/2005-04-04 cover the prototype window 100%; FRS-STALE dismissal under rule 5 is valid; LIC-NONCOMMERCIAL from the 'exclusively for research purposes' note correctly limits it to a Legal-cleared prototype benchmark; -200 sentinels incl. C6H6(GT) recognised."
+    },
+    {
+      "source_id": "link.data_open_air_chicago_hour_aggre_d4970b",
+      "reason": "Refused DOMAIN_NOT_ALLOWLISTED (trace line 75), no alternative route tried, ACC-UNREACHABLE kept: not_feasible is correct and the host stays off the allowlist."
+    },
+    {
+      "source_id": "internal.clinic.resp_visits_daily",
+      "reason": "Wiki clinic_data_policy permits only daily district counts for this purpose; no purpose/consent flag on the aggregate and N5 unmet are correct."
+    },
+    {
+      "source_id": "link.lombardia_6eu4_4tja_097de4",
+      "reason": "temporal.start null and the sample stuck in the 1980s-90s; the memo does not claim 2004-05 coverage and makes it a condition. Temperature-only prototype benchmark under GOV-PURPOSE-LIMITATION is right."
+    }
+  ],
+  "overrides": [
+    {
+      "source_id": "link.europa_sdg_11_52_099aa6",
+      "reason": "LIC-UNKNOWN came from probing the wrong URL (trace line 72, /eurostat/about/policies/copyright redirected to EU Login). The copyright notice at /eurostat/web/main/help/copyright-notice (re-read 2026-11-16) authorises reuse of statistical data with source acknowledged; the blocker reduces to attribution."
+    },
+    {
+      "source_id": "api.open_meteo_archive",
+      "reason": "Probed Milan (45.46, 9.19; trace lines 40-43) instead of the register/learner Verona assumption (45.44, 10.99, decisions.md), and recorded commercial_use 'yes' without reading /en/terms, which limits the free API to non-commercial use. Memo's 'location not set' is wrong; the 'last-modified after as-of' item is a page header, not a data issue; prototype start was in fact returned (2004-03-10, trace line 40)."
+    }
+  ],
+  "traced_conclusion": {
+    "source_id": "link.uci_360",
+    "record_field": "temporal.end",
+    "could_change_if": "Legal reads 'exclusively for research purposes' as excluding the Health Office's prototype work (then not_feasible), the prototype window moves outside 2004-03-10..2005-04-04, or recoding the -200 sentinels (about 17.5% of NO2 hours) leaves too little usable NO2."
+  }
+}

@@ -1,0 +1,31 @@
+# TC-018 gate decision checks (2026-11-15T20:24Z)
+
+$ python -m pytest tests/test_agent_loop.py -k links -q
+.                                                                        [100%]
+1 passed, 6 deselected in 0.15s
+
+## (a) no gate_decisions.json
+$ python -m discovery_agent run --use-case UC1 --from-stage profile --stop-after profile --links-file outputs/UC1/links.json --no-input
+Discovery run UC1 | model=claude-haiku-5-5 | stages profile..profile | out=/home/utk_tiger/stack_ai_rewire/work_3/outputs/UC1
+[profile]
+  totals: {'llm_calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'cache_read_input_tokens': 0, 'tool_calls': 0, 'tool_errors': 0, 'http_requests': 0, 'http_refused': 0}
+Missing /home/utk_tiger/stack_ai_rewire/work_3/outputs/UC1/gate_decisions.json. Record accept or reject, with a reason, for each dataset link before profiling. Format and rules: README section 9, template links/_TEMPLATE_gate_decisions.json.
+run_summary.json totals: {'llm_calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'cache_read_input_tokens': 0, 'tool_calls': 0, 'tool_errors': 0, 'http_requests': 0, 'http_refused': 0}
+
+## (b) gate file covering only the UCI link (throwaway fixture, deleted after)
+$ python -m discovery_agent run --use-case UC1 --from-stage profile --stop-after profile --links-file outputs/UC1/links.json --no-input
+Discovery run UC1 | model=claude-haiku-5-5 | stages profile..profile | out=/home/utk_tiger/stack_ai_rewire/work_3/outputs/UC1
+[profile]
+  totals: {'llm_calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'cache_read_input_tokens': 0, 'tool_calls': 0, 'tool_errors': 0, 'http_requests': 0, 'http_refused': 0}
+No decision for https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sdg_11_52?format=JSON&lang=EN&geo=IT in /home/utk_tiger/stack_ai_rewire/work_3/outputs/UC1/gate_decisions.json. Add accept or reject with a reason.
+run_summary.json totals: {'llm_calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'cache_read_input_tokens': 0, 'tool_calls': 0, 'tool_errors': 0, 'http_requests': 0, 'http_refused': 0}
+
+## (c) gate file covering all three links, one reason under 20 chars (throwaway fixture, deleted after)
+$ python -m discovery_agent run --use-case UC1 --from-stage profile --stop-after profile --links-file outputs/UC1/links.json --no-input
+Discovery run UC1 | model=claude-haiku-5-5 | stages profile..profile | out=/home/utk_tiger/stack_ai_rewire/work_3/outputs/UC1
+[profile]
+  totals: {'llm_calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'cache_read_input_tokens': 0, 'tool_calls': 0, 'tool_errors': 0, 'http_requests': 0, 'http_refused': 0}
+Reason for https://archive.ics.uci.edu/dataset/360/air+quality is too short: give at least 20 characters, in your own words.
+run_summary.json totals: {'llm_calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'cache_read_input_tokens': 0, 'tool_calls': 0, 'tool_errors': 0, 'http_requests': 0, 'http_refused': 0}
+
+Fixture gate file removed: yes
