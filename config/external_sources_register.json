@@ -35,8 +35,8 @@
       "endpoint": "https://archive-api.open-meteo.com/v1/archive",
       "path_params": [],
       "default_query": {
-        "latitude": "38.72",
-        "longitude": "-9.14",
+        "latitude": "45.44",
+        "longitude": "10.99",
         "start_date": "2014-01-01",
         "end_date": "2014-01-03",
         "hourly": "temperature_2m,shortwave_radiation",

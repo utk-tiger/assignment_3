@@ -1,0 +1,51 @@
+Model: gemini-3.8-flash
+Query: EEA Air Quality e-Reporting download of hourly NO2 and PM2.5 station data for Italy for 2024 and 2025: exact dataset page URL, licence, and whether recent data is validated (E1a) or up-to-date unvalidated (E2a).
+
+### 1. Exact Dataset Page URLs
+
+The European Environment Agency (EEA) provides air quality time-series measurements (including hourly $\text{NO}_2$ and $\text{PM}_{2.5}$ for Italy) through its modernized **Air Quality Download Service**:
+
+* **Official EEA Datahub Dataset Entry:**  
+  [https://www.eea.europa.eu/en/datahub/datahubitem-view/778ef9f5-6293-4846-badd-56a29c70880d](https://www.eea.europa.eu/en/datahub/datahubitem-view/778ef9f5-6293-4846-badd-56a29c70880d) *(Title: "Air Quality download service for verified and Up To Date data, 2013–now")*
+* **Direct Web Download Application / GUI:**  
+  [https://eeadmz1-downloads-webapp.azurewebsites.net/](https://eeadmz1-downloads-webapp.azurewebsites.net/) *(Interactive form to filter by Country: `IT`, Pollutants: `NO2` / `PM2.5`, Year, and Dataset type into zipped Parquet files)*
+* **Swagger API Endpoint:**  
+  `https://eeadmz1-downloads-api-appservice.azurewebsites.net/`
+* **European Air Quality Portal (Documentation & Governance):**  
+  [https://www.eionet.europa.eu/aqportal/](https://www.eionet.europa.eu/aqportal/)
+
+---
+
+### 2. Licence
+
+* **Licence:** **Creative Commons Attribution 4.0 International (CC BY 4.0)**.
+* **Copyright Holder:** European Environment Agency (EEA).
+* **Usage Conditions:** Open and free for academic, public, or commercial reuse, subject to attribution.
+
+---
+
+### 3. Data Validation Status for 2024 and 2025: E1a vs. E2a
+
+Under EU Directive 2008/50/EC and EEA reporting rules, data streams are split into two flows:
+* **E2a:** Up-to-date (UTD) / near-real-time measurements transmitted continuously by national monitoring authorities (e.g., ISPRA/ARPA in Italy) that are **unvalidated**.
+* **E1a:** Official **validated** assessment data, rigorously quality-controlled and submitted annually by Member States by **September 30 of year $t+1$ for year $t$**.
+
+#### Breakdown by Year:
+* **2024 Data:**  
+  * **Validated (E1a):** The deadline for Member States to report validated 2024 data was **September 30, 2025**. Full-year 2024 data for Italy is available as **E1a** (Dataset 2 in the download service).
+* **2025 Data:**  
+  * **Up-to-date unvalidated (E2a):** The official E1a submission deadline for calendar year 2025 is **September 30, 2026**. Until national validation and EEA ingestion are complete, recent 2025 data is accessed primarily via **E2a** (Dataset 1 in the download service). Once validated submissions are processed, E1a replaces E2a for that calendar year.
+
+Citations:
+  [1] lib4ri.ch: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEdKunqDp9d4I0Ed_q1IRW3Dklz_ZJ8eKD3wn6Lc2WQaP6G57tEKpcvaEsjP7S4Io5kp8EYXyvPjOwIasLDEyQ3VFomWvNHSJpPa94ZFUt2UZJMkl5fmxr0oYCFH8qUW-yiivGAL0rP7JEg0edMxXTi0qJ47FCq0Wyesy_Z4FnU9eVuMegbOqcNAGakKocmwglPWBW05QNbNT9aUoWKGkqe8U1Lkeor_Fl5PCPx-x29PVhBis4=
+       supports: [https://www.eea.europa.eu/en/datahub/datahubitem-view/778ef9f5-6293-4846-badd-56a29c70880d](https://www.eea.europa.eu/en/datahub/datahubitem-view/778ef9f5-6293-4846-badd-56a29c70880d)
+  [2] earthmonitor.org: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG1l8Fjtt6bKsGepJOzllsntSXrfai_iy0QrYWRLim5HAyRrDqEG5x6FOBisAprKio8Vwyb_oTKlXrBhToL7JRch00bGxB9AJiiwFmq33wgfjtjt7KCuKEFoxPzbL6tnpCGY6UC-7TUwkslDKE3m2XMuG1h
+       supports: ttps://eeadmz1-downloads-webapp.azurewebsites.net/](https://eeadmz1-downloads-webapp.azurewebsites.net/) *
+  [3] fibric.io: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFzDFOJyW-qYdV1-nZMrV6vWocGb2u12yTgFM5-FtWBw9hlnyaYzgJv4j31B2YyRDifnnScCvZyphCFtsXA8xVWNOkjADDXpMlLnQgaOX0qjivffxy_zyCAwF5AoGiu1WwhV9mcGzgQDjiolQQt-4Eatg==
+       supports: ttps://eeadmz1-downloads-webapp.azurewebsites.net/](https://eeadmz1-downloads-webapp.azurewebsites.net/) *(Interactive form to filter by Country: `IT`, Pollutants: `NO2` / `PM2.5`, Year, and Dataset t
+       supports: Licence:** **Creative Commons Attribution 4.0 International (CC BY 4.0)**.
+       supports: Copyright Holder:** European Environment Agency (EEA).
+  [4] fibric.io: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHi9F4DaCB9y50qwTepVQoB0_5Jj2NwoUAEUyi43Ba2gXWhBilAT7d5i2oM7HjPiymVvPB2U8h6yx55obCy4cJeuDhq2El6NnIxuNG82hqsU65dQAIcEDDedxbBlNWw2i4EBqm4nHUofa0Ulv3JUpf1h2E=
+       supports: ttps://eeadmz1-downloads-api-appservice.azurewebsites.net/` *
+  [5] data.gov.uk: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF6MdQTU7Nfx_l6oFzwA1mCXvx66h4djAdVJ_BXSMDMLivN_TYeYZVbp7Gdy5XNuDQnibAn7xO45jCUZlCQjv2I1v1HbEz89wLdRF9W4CSgPHvqaQ4OH8lR4aFesDkgqs761-heNlEHb2Ax7puW5w6sRQyxM5xo3IPi4pcSFDfzkEk7DL7JRo0FUYyZZkQZxnVXFV1xrqh7vR-_dGk15Mq_ENviuZNTrJXvH4tQAgg=
+       supports: ttps://www.eionet.europa.eu/aqportal/](https://www.eionet.europa.eu/aqportal/)

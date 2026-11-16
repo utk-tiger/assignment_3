@@ -1,0 +1,142 @@
+{
+  "source_id": "link.europa_sdg_11_52_099aa6",
+  "kind": "dataset_link",
+  "title": "Eurostat SDG 11.52 – Premature deaths due to exposure to PM2.5, Italy (annual, national)",
+  "summary": "Eurostat JSON-stat table sdg_11_52 with a single geography (IT), a single pollutant (PM2.5) and a single effect (premature death), reported annually in two units (number and rate). It is national context for N6 only: it gives no hourly, district, station or traffic data. The API returned 36 cells across 18 years (2005–2023) with no missing values, though the warning TIME_GAPS applies to the year series.",
+  "schema": {
+    "documented": "structured",
+    "field_count": 6,
+    "fields": [
+      {
+        "name": "freq",
+        "type": "code",
+        "description": "Frequency; single value A: Annual"
+      },
+      {
+        "name": "airpol",
+        "type": "code",
+        "description": "Air pollutant; single value PM2_5: Particulates < 2.5µm"
+      },
+      {
+        "name": "effect",
+        "type": "code",
+        "description": "Effect; single value PMD: Premature death"
+      },
+      {
+        "name": "unit",
+        "type": "code",
+        "description": "NR: Number; RT: Rate (2 values)"
+      },
+      {
+        "name": "geo",
+        "type": "code",
+        "description": "Geography; single value IT: Italy"
+      },
+      {
+        "name": "time",
+        "type": "code",
+        "description": "Year, 2005 to 2023 with gaps (18 values; 2006 absent from the time list)",
+        "unit": "year"
+      }
+    ],
+    "notes": "Structured JSON-stat 2.0 dimensions. Value and status arrays were not sampled as a data file. Rate unit denominator is not stated in the summary."
+  },
+  "temporal": {
+    "start": "2005-01-01",
+    "end": "2023-12-31",
+    "grain": "annual",
+    "metadata_last_updated": "2025-12-09",
+    "open_ended": null,
+    "refresh_cadence": null
+  },
+  "spatial": {
+    "coverage": [
+      "IT"
+    ],
+    "code_system": "ISO2 (Eurostat geo code IT)",
+    "notes": "National level only; no regional or district breakdown in this table."
+  },
+  "ownership": {
+    "owner": null,
+    "publisher": "Eurostat (ESTAT), per JSON-stat source field",
+    "steward": null
+  },
+  "licence": {
+    "name": null,
+    "evidence": "Not found. inspect_dataset_link returned no licence evidence for this link; probe_url of https://ec.europa.eu/eurostat/about/policies/copyright redirected to an EU Login page with no licence text. The external register has no entry for Eurostat. The open-data policy (policy.open_data_links) permits open datasets only subject to each dataset's own licence as read at source, which could not be read.",
+    "url": null,
+    "agreement_status": "not in external register; licence unverified",
+    "commercial_use": "unknown",
+    "mixed_sources": null,
+    "attribution_text": null
+  },
+  "access": {
+    "method": "rest_api",
+    "auth_required": false,
+    "reachable": true,
+    "classification": null,
+    "approx_size_bytes": 5827,
+    "request_process": "Public JSON-stat API endpoint; no key observed in the probe. Licence and purpose clearance pending Legal review before any production use."
+  },
+  "declared_metadata": {
+    "updated": "2025-12-09T11:00:00+0100",
+    "warnings": [
+      "TIME_GAPS"
+    ],
+    "status_counts": {},
+    "missing_cells": 0,
+    "expected_cells": 36,
+    "value_count": 36
+  },
+  "documentation_excerpts": [
+    "JSON-stat summary label: 'Premature deaths due to exposure to fine particulate matter (PM2.5)'; source: 'ESTAT'; updated: '2025-12-09T11:00:00+0100'.",
+    "warnings: ['TIME_GAPS']"
+  ],
+  "quality_notes": [
+    "Coverage vs needs: the table is annual and national (IT). It cannot meet N1–N3, N4 or N5 (hourly, daily, district or event grain). It only partly touches N6 (annual national context).",
+    "Prototype window (2004-03-10 to 2005-04-04) overlaps only 2005 in this table, so it gives at most one year of context for that window.",
+    "Production window (2024-01-01 to 2025-12-31) is not covered: the last year in the table is 2023 and the table was updated 2025-12-09.",
+    "TIME_GAPS warning: the time dimension lists 2005 and 2007–2023; 2006 is absent (18 years, not 19).",
+    "Rate unit (RT) denominator is not stated in the summary; Number and Rate values should not be compared without the documentation.",
+    "Licence not established: no licence text found at the source; Eurostat copyright page was not readable (login redirect)."
+  ],
+  "provenance": [
+    {
+      "claim": "Endpoint resolves (HTTP 200, application/json, content-length 5827) and is a JSON-stat table with dimensions freq, airpol, effect, unit, geo, time.",
+      "evidence": "inspect_dataset_link url=https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sdg_11_52?format=JSON&lang=EN&geo=IT"
+    },
+    {
+      "claim": "Time coverage 2005–2023, 18 values, 36 expected cells, 0 missing, warning TIME_GAPS, updated 2025-12-09.",
+      "evidence": "summarize_jsonstat url=same endpoint; inspect_dataset_link summary.time and warnings"
+    },
+    {
+      "claim": "Geography is IT only; single pollutant PM2.5 and single effect premature death.",
+      "evidence": "summarize_jsonstat dimension list (geo: IT: Italy; airpol: PM2_5; effect: PMD)"
+    },
+    {
+      "claim": "No licence was found in the link metadata or the Eurostat copyright page; that page redirected to EU Login.",
+      "evidence": "inspect_dataset_link (no licence field); probe_url https://ec.europa.eu/eurostat/about/policies/copyright (final_url ecas login, licence_snippets empty)"
+    },
+    {
+      "claim": "Eurostat is not in the external register; the open-data policy permits open datasets only subject to the dataset's own licence and Legal review for production.",
+      "evidence": "list_external_register; policy.open_data_links notes"
+    },
+    {
+      "claim": "The table serves only N6 (annual national PM2.5 deaths) for the prototype and production windows.",
+      "evidence": "use case spec UC1 needs N6 and windows; candidate record link.europa_sdg_11_52_099aa6 need_ids"
+    }
+  ],
+  "unknowns": [
+    "Licence name, reuse terms and attribution for Eurostat SDG 11.52 data were not found.",
+    "Owner and steward beyond 'Eurostat (ESTAT)' are not stated.",
+    "Refresh cadence not stated; only the updated date 2025-12-09 is known.",
+    "Reason for the 2006 gap in the time series is not documented in the metadata.",
+    "Denominator for the RT (rate) unit is not stated.",
+    "Whether the value arrays contain status flags (e.g. estimates, provisional) was not checked; status_counts is empty.",
+    "Catalog status (active, deprecated, etc.) was not stated by the source.",
+    "No values exist for 2024–2025 in this table."
+  ],
+  "location": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sdg_11_52?format=JSON&lang=EN&geo=IT",
+  "status": null,
+  "canonical_ref": "ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sdg_11_52?format=JSON&geo=IT&lang=EN"
+}

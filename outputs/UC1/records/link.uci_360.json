@@ -1,0 +1,214 @@
+{
+  "source_id": "link.uci_360",
+  "kind": "dataset_link",
+  "title": "UCI 360 Air Quality (gas multisensor array with reference analyser), Italian city, 2004-2005",
+  "summary": "Single CSV of hourly averaged readings from a road-level air-quality chemical multisensor device in an unnamed Italian city, with co-located certified reference analyser values for CO, NMHC, benzene, NOx and NO2, plus five metal-oxide sensor responses and temperature, relative humidity and absolute humidity. The sample covers 2004-03-10 to 2005-04-04 with about 9,357 rows (the whole file was read). It is a one-off research dataset, not a live feed, and has no traffic counts or clinic data.",
+  "schema": {
+    "documented": "structured",
+    "field_count": 15,
+    "fields": [
+      {
+        "name": "Date",
+        "description": "Date (DD/MM/YYYY per UCI variable_info)",
+        "type": "date",
+        "unit": null,
+        "pii": false
+      },
+      {
+        "name": "Time",
+        "description": "Hour of measurement (documented as HH.MM.SS)",
+        "type": "text",
+        "unit": null,
+        "pii": false
+      },
+      {
+        "name": "CO(GT)",
+        "description": "True hourly averaged CO concentration, reference analyser",
+        "type": "number",
+        "unit": "mg/m^3",
+        "pii": false
+      },
+      {
+        "name": "PT08.S1(CO)",
+        "description": "Hourly averaged metal-oxide sensor response, nominally CO",
+        "type": "integer",
+        "unit": null,
+        "pii": false
+      },
+      {
+        "name": "NMHC(GT)",
+        "description": "True hourly averaged non-methane hydrocarbons, reference analyser",
+        "type": "integer",
+        "unit": "microg/m^3",
+        "pii": false
+      },
+      {
+        "name": "C6H6(GT)",
+        "description": "True hourly averaged benzene, reference analyser",
+        "type": "number",
+        "unit": "microg/m^3",
+        "pii": false
+      },
+      {
+        "name": "PT08.S2(NMHC)",
+        "description": "Sensor response, nominally NMHC",
+        "type": "integer",
+        "unit": null,
+        "pii": false
+      },
+      {
+        "name": "NOx(GT)",
+        "description": "True hourly averaged NOx, reference analyser",
+        "type": "integer",
+        "unit": "ppb",
+        "pii": false
+      },
+      {
+        "name": "PT08.S3(NOx)",
+        "description": "Sensor response, nominally NOx",
+        "type": "integer",
+        "unit": null,
+        "pii": false
+      },
+      {
+        "name": "NO2(GT)",
+        "description": "True hourly averaged NO2, reference analyser",
+        "type": "integer",
+        "unit": "microg/m^3",
+        "pii": false
+      },
+      {
+        "name": "PT08.S4(NO2)",
+        "description": "Sensor response, nominally NO2",
+        "type": "integer",
+        "unit": null,
+        "pii": false
+      },
+      {
+        "name": "PT08.S5(O3)",
+        "description": "Sensor response, nominally O3",
+        "type": "integer",
+        "unit": null,
+        "pii": false
+      },
+      {
+        "name": "T",
+        "description": "Temperature",
+        "type": "number",
+        "unit": "°C",
+        "pii": false
+      },
+      {
+        "name": "RH",
+        "description": "Relative humidity",
+        "type": "number",
+        "unit": "%",
+        "pii": false
+      },
+      {
+        "name": "AH",
+        "description": "Absolute humidity",
+        "type": "number",
+        "unit": null,
+        "pii": false
+      }
+    ],
+    "notes": "UCI metadata types several sensor columns as Categorical; the sample parsed them as integers. No personal-looking columns."
+  },
+  "temporal": {
+    "start": "2004-03-10",
+    "end": "2005-04-04",
+    "grain": "hourly",
+    "metadata_last_updated": "2024-03-10",
+    "open_ended": false,
+    "refresh_cadence": "none (static one-off dataset; UCI notes say recordings span March 2004 to February 2005)"
+  },
+  "spatial": {
+    "coverage": [
+      "IT"
+    ],
+    "code_system": "free-text; no station name, coordinates or city named in the documentation (described only as 'an Italian city', road-level, 'significantly polluted area')",
+    "notes": "Single site. Cannot be joined to district-level clinic counts or to any traffic count without external station metadata."
+  },
+  "ownership": {
+    "owner": null,
+    "publisher": "UCI Machine Learning Repository",
+    "steward": null
+  },
+  "licence": {
+    "name": "CC BY 4.0 (per UCI page) - conflicts with research-only statement in dataset notes",
+    "evidence": "inspect_dataset_link: licence.found_in='link', snippet 'This dataset is licensed under a Creative Commons Attribution 4.0 International (CC BY 4.0) license.'; the same UCI page's notes.summary says: 'This dataset can be used exclusively for research purposes. Commercial purposes are fully excluded.' licence_in_api is null.",
+    "agreement_status": null,
+    "attribution_text": "Saverio Vito; cite De Vito et al., Sens. and Act. B, Vol. 129, 2, 2008 (per UCI notes); DOI 10.24432/C59K5F",
+    "commercial_use": "unknown",
+    "url": "https://creativecommons.org/licenses/by/4.0/legalcode",
+    "mixed_sources": null
+  },
+  "access": {
+    "method": "file_download",
+    "auth_required": false,
+    "reachable": true,
+    "classification": "public",
+    "approx_size_bytes": 741211,
+    "request_process": "Direct CSV download from the UCI static path; no registration seen."
+  },
+  "declared_metadata": {
+    "has_missing_values": "no",
+    "missing_values_symbol": null,
+    "contains_pii": null,
+    "num_instances": 9358,
+    "num_features": 15,
+    "doi": "10.24432/C59K5F",
+    "metadata_last_updated": "2024-03-10"
+  },
+  "documentation_excerpts": [
+    "Missing values are tagged with -200 value.",
+    "Data were recorded from March 2004 to February 2005 (one year)",
+    "This dataset can be used exclusively for research purposes. Commercial purposes are fully excluded.",
+    "Contains the responses of a gas multisensor device deployed on the field in an Italian city."
+  ],
+  "quality_notes": [
+    "UCI declares has_missing_values='no' and missing_values_symbol=null, yet the notes say missing values are coded -200 and the sample has them in most columns. Treat -200 as missing.",
+    "Missingness varies by column in the sample: NMHC(GT) 9.8% populated (8,443 cells = -200); NOx(GT) and NO2(GT) about 82.5% populated (about 1,640 cells each = -200); CO(GT) 83% populated (1,592 = -200); the sensor columns, T, RH and AH about 96.1% populated (366 cells each = -200).",
+    "C6H6(GT) shows 100% non-missing and no sentinel count, but 366 values equal -200 (counted as negatives). The -200 sentinel is therefore not flagged on this column and would pass a naive missing-value filter. Also CO(GT) has 91 negative values that are not -200 and need a check.",
+    "Temperature T has 13 negative values in the sample (min -1.9 °C). Plausible for winter, but check against the sentinel.",
+    "Date span conflict: the UCI notes say recordings run 'March 2004 to February 2005', but the file's dates run from 2004-03-10 to 2005-04-04. The data itself is the better guide for coverage.",
+    "Row count conflict: UCI metadata gives 9,358 instances; the sample read 9,357 data rows (the whole file, sample_is_whole_file=true). Likely a header or counting difference, not verified.",
+    "The city is not named in the UCI documentation. The page describes only 'an Italian city' and a road-level, significantly polluted site. Location cannot be confirmed from this source, so it cannot be matched to Valdena.",
+    "Reference values are from one co-located analyser at one site. The sensor columns are uncalibrated and affected by drift and cross-sensitivity (per the UCI notes citing De Vito et al. 2008).",
+    "Coverage gaps for the use case: no vehicle traffic (N2), no respiratory clinic data (N4/N5), no PM2.5 or PM10 (N1 asks for NO2 or PM2.5; NO2 is present), and no annual PM2.5 deaths context (N6). Only the prototype window is covered, and only by this file.",
+    "Time field is documented as HH.MM.SS but parsed as H:00:00 in the sample. Harmless but needs a parser that accepts both.",
+    "Licence conflict: CC BY 4.0 on the page versus research-only, commercial use excluded in the notes. Commercial use cannot be confirmed; treat as not cleared for commercial use until the owner or UCI confirms."
+  ],
+  "provenance": [
+    {
+      "claim": "The dataset is a UCI dataset with canonical ref uci:360, 9,358 instances, 15 features, DOI 10.24432/C59K5F, metadata last updated 2024-03-10, and creator Saverio Vito.",
+      "evidence": "inspect_dataset_link url=https://archive.ics.uci.edu/dataset/360/air+quality (metadata)"
+    },
+    {
+      "claim": "The data file is a CSV at https://archive.ics.uci.edu/static/public/360/data.csv of about 741 KB, read fully in the sample (9,357 rows, 15 columns) with date range 2004-03-10 to 2005-04-04.",
+      "evidence": "sample_data_file url=https://archive.ics.uci.edu/static/public/360/data.csv"
+    },
+    {
+      "claim": "Missing values are coded -200 in the data; the UCI page declares no missing values.",
+      "evidence": "inspect_dataset_link metadata.notes.summary and metadata.declared.has_missing_values; sample_data_file profile sentinel_counts"
+    },
+    {
+      "claim": "CC BY 4.0 licence found on the UCI page, but the notes restrict use to research and exclude commercial use.",
+      "evidence": "inspect_dataset_link licence (found_in=link) and metadata.notes.summary"
+    },
+    {
+      "claim": "The city is not named; the location is described only as an Italian city, road-level.",
+      "evidence": "inspect_dataset_link metadata.abstract and metadata.notes.summary"
+    }
+  ],
+  "unknowns": [
+    "Name, coordinates and exact site of the monitoring station, and whether it is in Valdena or any Italian city the client knows.",
+    "Owner or rights holder of the data beyond UCI and the creator; the steward is unknown.",
+    "Whether commercial or clinical-operational use is allowed given the conflict between CC BY 4.0 and the research-only notes.",
+    "Whether traffic counts exist for this site (none in the file, none documented).",
+    "Why the UCI row count (9,358) differs from the file (9,357 rows), and whether the time coverage ends in February or April 2005.",
+    "No PM2.5 or PM10 in the file; NO2 and NOx are reference-grade but at a single site.",
+    "Whether a newer or extended version of this dataset exists; the page shows no refresh cadence."
+  ]
+}

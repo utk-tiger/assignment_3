@@ -1,0 +1,300 @@
+{
+ "agent": "profiler__api.open_meteo_archive",
+ "system": "# Operating rules (all discovery agents)\n\nYou are one agent in a data-discovery system. The goal is to locate, catalog and assess the feasibility of data sources for a business problem **before any pipeline is built**.\n\n- **Metadata first, then a small sample, never the whole dataset.** Work from catalog entries, wiki pages, API metadata, landing pages, descriptors and terms pages. You may read a capped sample of a data file with `sample_data_file` to check structure and quality, but never try to download a whole dataset. Do not copy personal data (names, emails, addresses, ids) into your output.\n- **Provenance.** Every claim you make about a source must be traceable to a tool call (tool name and argument), a URL, a catalog field or a wiki page id.\n- **Unknown stays unknown.** If no source states a licence, owner, refresh cadence, consent or coverage date, record null or \"unknown\" and say so. Never infer one from what is typical.\n- **Guardrails are findings.** A refused host (DOMAIN_NOT_ALLOWLISTED), a timeout, a 401/403, an expired agreement or a restricted table is evidence to record. Do not look for another route to the same data.\n- **Documentation beats catalog metadata when it is more specific or more recent.** When they disagree, record both, with dates.\n- **Be economical.** Use the fewest tool calls that answer the question, and run independent calls in parallel. Stop when you have enough evidence, and finish by calling your submit tool.\n\n\n# Role: Profiler\n\nYou profile **one** candidate source and return a **catalog record**: an auto-generated summary of schema, freshness, ownership, licence, access and documented quality issues, with provenance for every claim.\n\nWhat to gather, by kind:\n- **internal**: `get_catalog_entry` (all fields), then every wiki backlink and related doc with `read_wiki_page`. Record catalog vs wiki disagreements in `quality_notes`, quoting both sides with dates. Internal sources have `licence.name = \"internal\"` and `commercial_use = \"not_applicable\"`.\n- **public_api**: `list_external_register` for the endpoint, then one or two small `call_public_api` probes to check that it responds and which period it covers (probe both ends of the needed windows if coverage is in doubt). Read the provider's terms with `probe_url` on `terms_url` and record the licence and its exact source.\n- **vendor_feed**: read the register entry. Do not try to call it. Record the agreement status and detail in `licence.agreement_status`, and set `access.reachable` to false when credentials are revoked or not issued.\n- **dataset_link** (any URL a human supplied; the link can point anywhere):\n  1. `inspect_dataset_link` on the link. It tells you the link type and gives metadata, licence evidence, files and next steps.\n  2. By link type:\n     - `uci_dataset_page`: read `metadata` (declared flags, notes, variables). If `data_url` exists, `sample_data_file` on it. Otherwise the data is only in an archive: describe the schema from the metadata and say the sample was not possible.\n     - `landing_page` (portals such as Kaggle, Zenodo, data.gov, CKAN or Hugging Face): read `jsonld_datasets` first (licence, dates, coverage, distribution), then `meta_description` and `text_start`. Pick the most specific data file from the distribution or `data_links` and `sample_data_file` it, if its host is allowlisted. If downloads need a login or subscription, set `access.auth_required = true`.\n     - `frictionless_datapackage`: `summarize_datapackage` with a `field_filter` for the use case's geography (e.g. the country code prefix the use case needs). Never sample the large CSVs it lists.\n     - `json_stat`: read the summary (dimensions, time, geo codes, warnings).\n     - `data_file`: the sample profile is already in the result. Find documentation for the file (repository README, parent page) if you can, using `probe_url`.\n     - `json_api`: use the shape and dates found. One more call at most.\n     - `login_wall` / `unreachable` / a refused host: record `access.reachable = false` (or `auth_required = true` for a login wall), say which host or credential would be needed, and stop.\n  3. Licence: use the licence from `inspect_dataset_link` and say where it was found (`found_in`). If none was found, look once on the provider's terms page with `probe_url`. Otherwise record null. Never assume a portal's usual licence.\n  4. Copy `canonical_ref` from `inspect_dataset_link` into the record.\n  5. Put what the **sample** showed in `sample_findings`, naming the column: sentinel values, negative quantities, zero shares, odd value sets (country spellings), date formats, personal-looking columns. A sample's date range is the range of the first rows only: take `temporal.start/end` from the documentation, not from the sample, unless the sample is the whole file.\n  6. Decide what the data **is**: entity, grain, period, geography, population. The Risk Assessor judges fit from this.\n\nField rules:\n- `temporal.start` / `temporal.end` are ISO dates (YYYY-MM-DD) of the **data period**. Use `end = null` only for sources that are still updating. `grain` is one of the schema's values.\n- `access.approx_size_bytes`: the largest file or table size you found stated (descriptor bytes, content-length, row counts x width if stated), else null.\n- `access.reachable = false` if the link itself (or its metadata) could not be reached, the host was refused, or the store cannot be restored. A data file that timed out or is an archive that cannot be sampled does NOT make the source unreachable when its metadata was read; note it in `quality_notes`.\n- `licence.mixed_sources = true` when different fields or files come from upstream providers with different terms.\n- `spatial.code_system`: how places are identified (ISO2, ISO3, free-text country names, Eurostat codes, ...). This decides whether joins will work.\n- `schema.documented`: \"structured\" when fields come with names and types, \"free_text_only\" when they are only described in prose, \"none\" otherwise.\n- At least three `provenance` entries. Put everything you could not establish in `unknowns`.\n",
+ "messages": [
+  {
+   "role": "user",
+   "content": "<use_case_spec>\n{\n \"id\": \"UC2\",\n \"title\": \"Ice-cream sales: do hot days and public holidays raise our sales?\",\n \"client\": \"Valdena Gelato Shop (fictional, northern Italy)\",\n \"as_of\": \"2026-10-15\",\n \"geography\": {\n  \"primary\": [\n   \"IT\"\n  ],\n  \"secondary\": []\n },\n \"windows\": [\n  {\n   \"id\": \"history\",\n   \"start\": \"2023-06-01\",\n   \"end\": \"2025-05-31\",\n   \"purpose\": \"Two summers of daily sales, to see how weather and holidays affect them.\"\n  },\n  {\n   \"id\": \"recent\",\n   \"start\": \"2025-06-01\",\n   \"end\": \"2026-03-31\",\n   \"purpose\": \"The most recent months, to check that the pattern still holds.\"\n  }\n ],\n \"needs\": [\n  {\n   \"id\": \"N1\",\n   \"name\": \"Daily ice-cream sales by product\",\n   \"priority\": \"must\",\n   \"min_grain\": \"daily\",\n   \"windows\": [\n    \"history\",\n    \"recent\"\n   ]\n  },\n  {\n   \"id\": \"N2\",\n   \"name\": \"Mapping of product codes before and after the 2024 code change\",\n   \"priority\": \"must\",\n   \"min_grain\": \"static\",\n   \"windows\": [\n    \"history\"\n   ]\n  },\n  {\n   \"id\": \"N3\",\n   \"name\": \"Daily maximum temperature\",\n   \"priority\": \"must\",\n   \"min_grain\": \"daily\",\n   \"windows\": [\n    \"history\",\n    \"recent\"\n   ]\n  },\n  {\n   \"id\": \"N4\",\n   \"name\": \"Public holidays in Italy\",\n   \"priority\": \"should\",\n   \"min_grain\": \"daily\",\n   \"windows\": [\n    \"history\",\n    \"recent\"\n   ]\n  },\n  {\n   \"id\": \"N5\",\n   \"name\": \"Shop opening days and local events\",\n   \"priority\": \"should\",\n   \"min_grain\": \"daily\",\n   \"windows\": [\n    \"history\",\n    \"recent\"\n   ]\n  }\n ]\n}\n</use_case_spec>\n\n<candidate>\n{\n \"source_id\": \"api.open_meteo_archive\",\n \"kind\": \"public_api\",\n \"title\": \"Open-Meteo Historical Weather API (reanalysis)\",\n \"need_ids\": [\n  \"N3\"\n ],\n \"target_windows\": [\n  \"history\",\n  \"recent\"\n ],\n \"why_relevant\": \"Register API for daily max temperature via reanalysis for chosen coordinates in northern Italy; covers the needed windows if the window reaches 2026-03-31.\",\n \"found_via\": \"list_external_register\",\n \"suspected_issues\": [\n  \"Register default coordinates (45.44, 10.99) are not a recorded shop location; a city choice must be justified and logged in decisions.md.\",\n  \"Reanalysis lag and revision policy near the as-of date not yet checked.\",\n  \"Register default query is hourly with UTC timezone; daily aggregation must match the local sales day boundary.\"\n ],\n \"location\": \"https://archive-api.open-meteo.com/v1/archive\",\n \"canonical_ref\": \"api.open_meteo_archive\"\n}\n</candidate>\n\nProfile this one source and call submit_catalog_record."
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "signature": "CAQS4AQKEggTEAEYAjgBQgh0aGlua2luZxIM/A8kB+t5jhadKL4/GgzDxa/7F8u3JYkI+hIiMPnkcZ3mDdB0CtHJ6oSL3lA6NW2G1iBYp1U8Z/hYAl9bgehHs57wU/ypy+e+0zvK9yr7A5pWCKDaF7EjFUCgqtfLvmBGNAU19bT8gTV/DmIhm1FOCaAYUe/34yccQfAAuNzhBXW5s2zWUb9J8KVKQNYAKLDzCWKOYFtwHSom+CuA43h1ebFsJWHAkj6edoDNyRwkq3mZvNEmEc6bkr2LE02i2I/7Mu83VlVwmeFPmRm8DXkme3U62be6+/dAWNQfJ48DtsppeKodEibuxqGpNsrE9yEtfh7B4UDIQt0Yju+21cZP0fjY1DPlY12sZhSs2JmykEQvrHYKnwrO2lRMByBWYkyp2DA3vCPTPd8TVTQ1h+R8aTs7BUGAbsYdDTPdJ9Seq0fg2ekoBGJ1G6uGgdZyfnTjcsi+kP5dIx7BCX/TcD2i3APHH75uRxH58nTcX6LxotW3xpVgofUDX5ODgaPyp5NYPmQdrk44ocEtz0DntnMszrwUQhVWLEx1THnaX1H3gUBWQuJmRi+10jDvDVgLsSG3t1eZVkiMxfEPsF9YGJPALRV7NR81xGzn1zyE6g+aHHLrrYYkTmTPsavvMaBPectNggMoMpSRYKT4hBO+Y+GVr/eMCzs0YtjxSoJgPDq6RwIowUF8Ca3HCHeq4Y1hK6QAuTAL5tnJbq23g8uNGC/rB/5rXM5OrwlmnLwujs+ujfV1TNFb7d0I3VeUaV4us9JBXEUeFqI0CYGN1BgB",
+     "thinking": "",
+     "type": "thinking"
+    },
+    {
+     "id": "toolu_bdrk_01XJ3ACwRV6aENaRxbQ6iBpE",
+     "input": {},
+     "name": "list_external_register",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_bdrk_013fngA84TVg8s8xgvwK1LSe",
+     "input": {
+      "source_id": "api.open_meteo_archive",
+      "query": {
+       "start_date": "2026-03-25",
+       "end_date": "2026-03-31",
+       "daily": "temperature_2m_max",
+       "timezone": "Europe/Rome",
+       "latitude": "45.44",
+       "longitude": "10.99"
+      }
+     },
+     "name": "call_public_api",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_bdrk_01XJ3ACwRV6aENaRxbQ6iBpE",
+     "content": "{\"use_case\": \"UC2\", \"sources\": [{\"id\": \"policy.open_data_links\", \"kind\": \"policy\", \"title\": \"Open-data policy for dataset links supplied by analysts\", \"use_cases\": [\"UC1\", \"UC2\"], \"agreement_status\": \"not_required_open_data\", \"approved_purposes\": [\"prototyping\", \"benchmarking\", \"context\"], \"notes\": \"Legal allows publicly available datasets (repositories such as UCI or Zenodo, statistics offices, open-data portals) for prototyping, benchmarking and context, subject to each dataset's own licence as read at its source. Datasets behind a login, with an unknown licence or a non-commercial licence need Legal review before use. Production use of any external dataset needs Legal sign-off.\", \"docs_url\": null, \"terms_url\": null}, {\"id\": \"api.open_meteo_archive\", \"kind\": \"public_api\", \"title\": \"Open-Meteo Historical Weather API (reanalysis)\", \"use_cases\": [\"UC1\", \"UC2\"], \"agreement_status\": \"not_required_open_data\", \"approved_purposes\": [\"prototyping\", \"production\"], \"endpoint\": \"https://archive-api.open-meteo.com/v1/archive\", \"path_params\": [], \"default_query\": {\"latitude\": \"45.44\", \"longitude\": \"10.99\", \"start_date\": \"2014-01-01\", \"end_date\": \"2014-01-03\", \"hourly\": \"temperature_2m,shortwave_radiation\", \"timezone\": \"UTC\"}, \"param_notes\": \"latitude/longitude decimal degrees; start_date/end_date YYYY-MM-DD; hourly or daily variable lists. Keep probe ranges to a few days.\", \"docs_url\": \"https://open-meteo.com/en/docs/historical-weather-api\", \"terms_url\": \"https://open-meteo.com/en/licence\"}, {\"id\": \"api.nager_public_holidays\", \"kind\": \"public_api\", \"title\": \"Nager.Date public holidays API\", \"use_cases\": [\"UC1\", \"UC2\"], \"agreement_status\": \"not_required_open_data\", \"approved_purposes\": [\"prototyping\", \"production\"], \"endpoint\": \"https://date.nager.at/api/v3/PublicHolidays/{year}/{country}\", \"path_params\": [\"year\", \"country\"], \"default_query\": {}, \"param_notes\": \"country is ISO 3166-1 alpha-2 (PT, GB, FR, ...).\", \"docs_url\": \"https://date.nager.at/Api\", \"terms_url\": \"https://github.com/nager/Nager.Date\"}]}"
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_bdrk_013fngA84TVg8s8xgvwK1LSe",
+     "content": "{\"source_id\": \"api.open_meteo_archive\", \"url\": \"https://archive-api.open-meteo.com/v1/archive?latitude=45.44&longitude=10.99&start_date=2026-03-25&end_date=2026-03-31&hourly=temperature_2m,shortwave_radiation&timezone=Europe%2FRome&daily=temperature_2m_max\", \"status\": 200, \"error\": null, \"content_type\": \"application/json; charset=utf-8\", \"bytes\": 5344, \"truncated\": false, \"from_cache\": false, \"dates_found\": {\"min_date\": \"2026-03-25\", \"max_date\": \"2026-03-31\", \"n_dates\": 175}, \"shape\": {\"latitude\": 45.448154, \"longitude\": 11.003136, \"generationtime_ms\": 0.1010894775390625, \"utc_offset_seconds\": 3600, \"timezone\": \"Europe/Rome\", \"timezone_abbreviation\": \"GMT+1\", \"elevation\": 69.0, \"hourly_units\": {\"time\": \"iso8601\", \"temperature_2m\": \"°C\", \"shortwave_radiation\": \"W/m²\"}, \"hourly\": {\"time\": [\"2026-03-25T00:00\", \"2026-03-25T01:00\", \"2026-03-25T02:00\", \"… 165 more items (total 168)\"], \"temperature_2m\": [9.0, 7.6, 8.2, \"… 165 more items (total 168)\"], \"shortwave_radiation\": [0.0, 0.0, 0.0, \"… 165 more items (total 168)\"]}, \"daily_units\": {\"time\": \"iso8601\", \"temperature_2m_max\": \"°C\"}, \"daily\": {\"time\": [\"2026-03-25\", \"2026-03-26\", \"2026-03-27\", \"… 4 more items (total 7)\"], \"temperature_2m_max\": [17.9, 13.1, 16.1, \"… 4 more items (total 7)\"]}}}"
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "signature": "CAQSrwUKEggTEAEYAjgBQgh0aGlua2luZxIMam3IKiOhYmYLOFNPGgy//y70SKMhAFQSAGQiMIfH2fsg8Zphw6fUU2DfXX9tzBJMqo9zq2/Sf01qFlab/a1SToytvWrl+hAPEgfKESrKBOJG4PXJQ2JEChexoTcCzm/O7SytaOd5yU6AqxbnXi3H9xbE9MrXpsSNo6voeFig4RfOoOpZjl0ZuB5K4ea37bbAm1o/N35QSwTmakTu4NHLCU/uY0mGKHGxlrWqaV4BhunRMud6PDFc/lf1mQwLFa9ndyE/Q3HshSOO7DrZ5/+3D6HBkb5HfP6yWottXH46k/sumFr/dnVeR/PeQnn04AKJZGyPDJXpfUjcNmJiFdOpDhEn/byMVfv3+X3U9ynfzo1UM/udgslVzanE9dO/S5PJmvOANXby1JO3Hw9T1kdeBgPC8p9Orp3CVlmo4+STs7i97ZsnQ2URAUxHXnaTDIGBFx7LUZxi0iiQtJXJu5pLCPMqlI/gAU3/tAkingCESlEVgwFaHBL6EDYUkGRdKxWyeciIQznpnG7LR9xByI+LqTCDpANJShzUT22vGTGBZF1H1Q13sbBtB+2A3O5MaKO9J5/Uqll+qVZScJPe5ufl6dPgXVsFmkBANkauZZL3PL7CZdoSmIc2RC1IdW4MdvGK/XETaV6v2IujUDXJBFqMhDkq4T7BZiCOIOfN1+eCZUZBJEnBG/ZeA6j9bPOx38o4vfEtwTHDk1yVWdCmCQZ/OiL5tboY6+MvbYwbgRZ1l3nbchKvVT8lDFg6dUtDjH2ZZCSuIBmWFcM9TDNcDYUeabHQjg+Br4/xHhZjh9RH5c84DgRDzq4mGSv8jwnUNoCf34pZ2zdKAiAe6KwnUYe3Z2JgNHbNUBO0z8KaXpEep7+P7Q4J0bUOawgYAQ==",
+     "thinking": "",
+     "type": "thinking"
+    },
+    {
+     "id": "toolu_bdrk_01YVe8YKxvsGUtYgeyDbj8Wr",
+     "input": {
+      "url": "https://open-meteo.com/en/licence"
+     },
+     "name": "probe_url",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_bdrk_012Yzz15CMUkRCeCCtH2CuY3",
+     "input": {
+      "url": "https://open-meteo.com/en/docs/historical-weather-api"
+     },
+     "name": "probe_url",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_bdrk_01YVe8YKxvsGUtYgeyDbj8Wr",
+     "content": "{\"url\": \"https://open-meteo.com/en/licence\", \"final_url\": \"https://open-meteo.com/en/licence\", \"status\": 200, \"error\": null, \"content_type\": \"text/html; charset=utf-8\", \"content_length_header\": null, \"last_modified_header\": \"Sun, 15 Nov 2026 21:27:20 GMT\", \"bytes_read\": 40502, \"truncated\": false, \"from_cache\": true, \"format\": \"html\", \"title\": \"🧑‍⚖️ Licence | Open-Meteo.com\", \"text_start\": \"🧑‍⚖️ Licence | Open-Meteo.com Open-Meteo Home Features Pricing API Docs Animations Toggle theme Licence Data Sources Open-Meteo utilises open-data from various national weather services including: Atmospheric, ensemble and wave forecasts from Deutscher Wetterdienst DWD ( CC-BY Licence ) Atmospheric, ensemble and wave forecasts from European Centre for Medium-Range Weather Forecasts ECMWF ( CC-BY Licence ) Atmospheric, ensemble and wave forecasts from NOAA NCEP ( Licence ) Atmospheric and ensemble forecasts from Canadian Meteorological Centre CMC ( Licence ) Atmospheric and wave forecasts from Météo-France ( Licence ) Atmospheric forecasts from Japan Meteorological Agency JMA ( Licence ) Atmospheric forecasts from Norwegian Meteorological Institute ( CC-BY Licence ) Atmospheric forecasts from Chinese Meteorological Administration CMA ( CC-BY Licence ) Atmospheric forecasts from Australian Bureau of Meteorology BOM ( CC-BY Licence ) Atmospheric forecasts from Royal Netherlands Meteorological Institute KNMI ( CC-BY Licence ) Atmospheric forecasts from Danish Meteorological Institute DMI ( CC-BY Licence ) Atmospheric forecasts from UK Met Office ( CC-BY-SA Licence ) Atmospheric forecasts from ItaliaMeteo-ARPAE ( CC-BY Licence ) Atmospheric forecasts from MeteoSwiss ( CC-BY Licence ) Wave forecasts from Copernicus Marine Service ( Licence ) Weather reanalysis, air quality forecasts and elevation data from Copernicus Climate Change Service C3S ( Licence ) Flood forecasts from Global Flood Awareness System GloFAS ( Licence ) Location database from GeoNames ( CC-BY Licence ) Icons from Weather Icons ( SIL OFL 1.1 ) Licence API data are offered under Attribution 4.0 International (CC BY 4.0) You are free to share: copy and redistribute the material in any medium or format and adapt: remix, transform, and build upon the material. Attribution: You must give appropriate credit, provide a link to the licence, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use. You must include a link next to any location Open-Meteo data are displayed, for example: < a href = \\\" https://open-meteo.com/ \\\" > Weather data by Open-Meteo.com </ a > Open-Meteo is open-source Source code is available on GitHub under the GNU Affero General Public Licence Version 3 AGPLv3 or any later version. You can find the licence here . Citation We encourage researchers in the field of meteorology and related disciplines to cite Open-Meteo in their work. By acknowledging Open-Meteo as the source of weather data and forecasts used in their research, researchers contribute to the growing body of knowledge and advancements in the field. Citing Open-Meteo not only gives proper credit to the API but also promotes transparency, reproducibility, and collaboration within the scientific community. Together, let's foster a culture of recognition and support for open-source initiatives like Open-Meteo, ensuring that future researchers can benefit from the valuable resources it provides. Citation: APA MLA Harvard BibTeX Zippenfenig, P. (2023). Open-Meteo.com Weather API [Computer software]. Zenodo. https://doi.org/10.5281/ZENODO.7970649 Open-Meteo Features Pricing About us & Contact Licence Terms & Privacy Weather APIs Weather Forecast API Historical Weather API ECMWF API GFS & RRFS Forecast API Météo-France API DWD ICON API GEM API JMA API Met Norway API Other APIs Ensemble API Climate Change API Marine We\", \"text_chars\": 3693, \"licence_snippets\": [\"🧑‍⚖️ Licence | Open-Meteo.com Open-Meteo Home Features Pricing API Docs Animations Toggle theme Licence Data Sources Open-Meteo utilises open-data from various national weather services including: Atmospheric, ensemble and wave fore\", \"asts from Deutscher Wetterdienst DWD ( CC-BY Licence ) Atmospheric, ensemble and wave forecasts from European Centre for Medium-Range Weather Forecasts ECMWF ( CC-BY Licence ) Atmospheric, ensemble and wave forecasts from NOAA NCEP ( Licence ) Atmospheric and ensemble forecasts from Canadian Meteorological Centre CMC ( Licence ) Atmospheric and wave forecasts from Météo-France ( Lic\", \"Météo-France ( Licence ) Atmospheric forecasts from Japan Meteorological Agency JMA ( Licence ) Atmospheric forecasts from Norwegian Meteorological Institute ( CC-BY Licence ) Atmospheric forecasts from Chinese Meteorological Administration CMA ( CC-BY Licence ) Atmospheric forecasts from Australian Bureau of Meteorology BOM ( CC-BY Licence ) Atmospheric forecasts from Royal Netherl\", \") Atmospheric forecasts from Royal Netherlands Meteorological Institute KNMI ( CC-BY Licence ) Atmospheric forecasts from Danish Meteorological Institute DMI ( CC-BY Licence ) Atmospheric forecasts from UK Met Office ( CC-BY-SA Licence ) Atmospheric forecasts from ItaliaMeteo-ARPAE ( CC-BY Licence ) Atmospheric forecasts from MeteoSwiss ( CC-BY Licence ) Wave forecasts from Copernic\", \" forecasts from Copernicus Marine Service ( Licence ) Weather reanalysis, air quality forecasts and elevation data from Copernicus Climate Change Service C3S ( Licence ) Flood forecasts from Global Flood Awareness System GloFAS ( Licence ) Location database from GeoNames ( CC-BY Licence ) Icons from Weather Icons ( SIL OFL 1.1 ) Licence API data are offered under Attribution 4.0 Inter\", \"ational (CC BY 4.0) You are free to share: copy and redistribute the material in any medium or format and adapt: remix, transform, and build upon the material. Attribution: You must give appropriate credit, provide a link to the licence, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use. You mu\", \"ps://open-meteo.com/ \\\" > Weather data by Open-Meteo.com </ a > Open-Meteo is open-source Source code is available on GitHub under the GNU Affero General Public Licence Version 3 AGPLv3 or any later version. You can find the licence here . Citation We encourage researchers in the field of meteorology and related disciplines to cite Open-Meteo in their work. By acknowledging Open-Meteo \", \"fenig, P. (2023). Open-Meteo.com Weather API [Computer software]. Zenodo. https://doi.org/10.5281/ZENODO.7970649 Open-Meteo Features Pricing About us & Contact Licence Terms & Privacy Weather APIs Weather Forecast API Historical Weather API ECMWF API GFS & RRFS Forecast API Météo-France API DWD ICON API GEM API JMA API Met Norway API Other APIs Ensemble API Climate Change API Marine W\"], \"licence_links\": [\"/en/licence\", \"/en/terms\", \"https://creativecommons.org/licenses/by-sa/4.0/deed.en\", \"https://creativecommons.org/licenses/by/4.0/\", \"https://eccc-msc.github.io/open-data/licence/readme_en/\", \"https://github.com/open-meteo/open-meteo/blob/main/LICENSE\", \"https://marine.copernicus.eu/user-corner/service-commitments-and-licence\", \"https://object-store.os-api.cci2.ecmwf.int/cci2-prod-catalogue/licenses/cems-floods/cems-floods_428a6e1019ec50b3dad9c37a90d630fab139059933a939dd5df620bfcb420cc3.pdf\", \"https://object-store.os-api.cci2.ecmwf.int/cci2-prod-catalogue/licenses/licence-to-use-copernicus-products/licence-to-use-copernicus-products_b4b9451f54cffa16ecef5c912c9cebd6979925a956e3fa677976e0cf198c2c18.pdf\", \"https://open-meteo.com/en/licence\", \"https://openfontlicense.org/\", \"https://www.dwd.de/EN/service/copyright/copyright_node.html\", \"https://www.jma.go.jp/jma/en/copyright.html\"]}"
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_bdrk_012Yzz15CMUkRCeCCtH2CuY3",
+     "content": "{\"url\": \"https://open-meteo.com/en/docs/historical-weather-api\", \"final_url\": \"https://open-meteo.com/en/docs/historical-weather-api\", \"status\": 200, \"error\": null, \"content_type\": \"text/html; charset=utf-8\", \"content_length_header\": null, \"last_modified_header\": \"Sun, 15 Nov 2026 21:35:07 GMT\", \"bytes_read\": 392785, \"truncated\": false, \"from_cache\": false, \"format\": \"html\", \"title\": \"🏛️ Historical Weather API | Open-Meteo.com\", \"text_start\": \"🏛️ Historical Weather API | Open-Meteo.com Open-Meteo Home Features Pricing API Docs Animations Toggle theme Historical Weather API Discover how weather has shaped our world from 1940 until now Historical Weather Weather Forecast DWD Germany NOAA U.S. Météo-France ECMWF UK Met Office JMA Japan MeteoSwiss MET Norway GEM Canada CMA China KNMI Netherlands DMI Denmark ItaliaMeteo GeoSphere Austria CHMI Aladin Historical Weather Historical Forecast Single Runs Previous Model Runs Ensemble Models Ensemble Mean API Google WeatherNext Seasonal Forecast Climate Change Marine Forecast Air Quality Satellite Radiation Geocoding Elevation Flood Model Updates svg]:grid-cols-[calc(var(--spacing)*4)_1fr] has-[>svg]:gap-x-2 [&>svg]:min-w-4.75 [&>svg]:max-w-4.75 text-secondary-foreground bg-secondary border-secondary-foreground/25 *:data-[slot=alert-description]:text-secondary-foreground [&>svg]:text-current/75 mb-4\\\"> Gap-free and consistent historical weather data using weather reanalysis from ERA5 (0.25°, from 1940) and ERA5-Land (0.1°, from 1950) and ECMWF IFS (9 km, from 2017). For data that matches the live Forecast API format exactly, use the Historical Forecast API . To access the full forecast horizon of individual model runs, use the Single Runs API . To analyse forecast accuracy at fixed lead times of 1–7 days, use the Previous Model Runs API . Location and Time Location: Coordinates List Bounding box Latitude Longitude Not set (GMT+0) Timezone Search Start date End date You can access past weather data dating back to 1940 in 0.1 or 0.25° resolution. Data from 2017 onwards uses newer weather models with 9 km resolution. Select \\\"ERA5\\\" or \\\"ERA5-Land\\\" for consistent data over multiple decades. Quick: 2000-2009 2010-2019 2020 2021 2022 2023 2024 2025 Hourly Weather Variables svg]:size-3.5 grid place-content-center text-current transition-none\\\"> Temperature (2 m) svg]:size-3.5 grid place-content-center text-current transition-none\\\"> Relative Humidity (2 m) svg]:size-3.5 grid place-content-center text-current transition-none\\\"> Dewpoint (2 m) svg]:size-3.5 grid place-content-center text-current transition-none\\\"> Apparent Temperature svg]:size-3.5 grid place-content-center text-current transition-none\\\"> Precipitation (rain + snow) svg]:size-3.5 grid place-content-center text-current transition-none\\\"> Rain svg]:size-3.5 grid place-content-center text-current transition-none\\\"> Snowfall svg]:size-3.5 grid place-content-center text-current transition-none\\\"> Snow depth svg]:size-3.5 grid place-content-center text-current transition-none\\\"> Weather code svg]:size-3.5 grid place-content-center text-current transition-none\\\"> Sea Level Pressure svg]:size-3.5 grid place-content-center text-current transition-none\\\"> Surface Pressure svg]:size-3.5 grid place-content-center text-current transition-none\\\"> Cloud Cover Total svg]:size-3.5 grid place-content-center text-current transition-none\\\"> Cloud Cover Low svg]:size-3.5 grid place-content-center text-current transition-none\\\"> Cloud Cover Mid svg]:size-3.5 grid place-content-center text-current transition-none\\\"> Cloud Cover High svg]:size-3.5 grid place-content-center text-current transition-none\\\"> Reference Evapotranspiration (ET₀) svg]:size-3.5 grid place-content-center text-current transition-none\\\"> Vapour Pressure Deficit svg]:size-3.5 grid place-content-center text-current transition-none\\\"> Wind Speed (10 m) svg]:size-3.5 grid place-content-center text-current transition-none\\\"> Wind Speed (100 m) svg]:size-3.5 \", \"text_chars\": 37428, \"licence_snippets\": [\" Soil Temperature (7-28 cm) Settings Celsius °C Temperature Unit km/h Wind Speed Unit Millimeter Precipitation Unit ISO 8601 (e.g. 2026-11-10) Timeformat Usage licence: Non-Commercial Commercial Self-Hosted API Response Preview: Chart & URL Python TypeScript Swift Other Loading... Download XLSX Download CSV API URL ( Open in new tab , copy this URL into your application, or paste an A\", \"ECMWF. https://doi.org/10.24381/CDS.622A565A Generated using Copernicus Climate Change Service information 2022. Open-Meteo Features Pricing About us & Contact Licence Terms & Privacy Weather APIs Weather Forecast API Historical Weather API ECMWF API GFS & RRFS Forecast API Météo-France API DWD ICON API GEM API JMA API Met Norway API Other APIs Ensemble API Climate Change API Marine W\", \"I Air Quality API Geocoding API Elevation API Flood API External X Blog GitHub Mastodon Service status and uptime Model Updates Overview Animations © 2022-2026 Copyright: Open-Meteo.com\"], \"licence_links\": [\"/_app/immutable/assets/licence-selector.DTkEacow.css\", \"/en/licence\", \"/en/terms\"]}"
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "signature": "CAQS1ggKEggTEAEYAjgBQgh0aGlua2luZxIMYBEH0upF+e6v1iM+GgyOgyNCVgrHlj3Us9ciMH+S5aHsoB3YfqmTtC5YO1jTNZFPkpTUl0zbmPiFBxsDxx5WJF5HiP30hqXBxmmnPyrxB8JlzqoYLhfuMGzw1rliQjSzPnzei//msCjlITfL/oBd4qZdYEypgK/RVnu/6N0r9BRwqtJDvqVHNULB5Y29r1cZbvDrBNXdo59TvvPqupcqj8WpIc/F9jcSOpS8G7BIiNBCBRJNS54vqkjnMDxvnfBEFSKWcp0utyurxwRisWMDrVIgIcNPB7tAh+D5sgM+t1GoMtjRJLvLzgpnA51xJpPqgq8qPOsehR00X0g+Glmr9pqPgZWW2u7iBye3KBGr1Jer9acwShDJKbHCJbDrKcRTKT+TVF6iN8Q5VIYrv45clERq6TXkgOzMlPtvYVwcZHSHYx8oCDzvRxGOGjK8MnPWYUDtvKWk6N4LgDALvh7pgl55XgUp7hOYWwo1v2Ad3DnHaExv6smN7h2nqMUR9TESOSe5qWyxIG/DBP7HzeVV2kfE2MZwwcSBszsJz0biGAsegQxrEmaNSd1gsyx6sgMr0Es/9/b3kLXBfmY1sVJ/ch0WyWAhn/FZNcx1i9cY9E/3tD2qiOgi9U+S/Mral7VaJuNBc1V+Cq3/1C+oV2NM2bTsZ7eUq9xoVQyoDWUOWJS2LGYDShLRcZHOr/1Fph0evnnMen/PgKLynNBJK8tRJi2PCsF0ZSr8mAGXJQyP9fChHayNn6RoxX6THuXhHl4Xjtwh87hQOWCwXaGgooJogDAPUkGufSf9bSL/kJIh5r94G11eo5Xt5QEHxjfctkFtkTWWuDbE/5VcdvkF4ElBiJWXItceACPjwZQYKb4EJ+odxJ8LJrU+tCwjoRxSpeEJfGVrlUTBAM/twVif0U39rtkwpmze301IKjDV5CS34xv8WyZ17/yDL8DKVrhNgAyHO3Q7d9Bm5OrJy8+WGPrWDMqpeYyFOWDiww/WPYWYMZXx0vmeK613MgnwUcVtrx0u2pGKlsejIvqhKn2AQz4sFXX+6oDr+4qi8ALYBpHRPuEHpqVfqdvVyZPGKLcJ73a4P1OW3A/gRE6HqyBX7IHwGnU/jN43X6M83f6l2DZNPrSJft1QQ60CzoVqLbJR9AS4ZwrkYPqG6LHodYKz5GoFTcsWfe/rvkl/4IJuC7RHX6UzMayO9qZcGDyujGr215By3IK0dyrlq51wKUxDcjCBVcaASSuqJpHWMf+/1hYDZ+plp2mbYY/nLLhuWXB5BIW7pGDqHNveS2dOogeCKsex37BIViNnLSTTL8HTAes5B/2dqWYCW20ok/WWZ7swkTtH7ko1QbBBfbAucfuL9PqlzKJDJUOkQsW2KLbVMm+Fevu7UHAq5jFTwlWgeXM/na/u8ozI9IqpBknjZC3byfzTLQcCY06RZFLHjlaLAWxc7I8YAQ==",
+     "thinking": "",
+     "type": "thinking"
+    },
+    {
+     "id": "toolu_bdrk_01JqQsb8tzTNT5DjbkbsmepK",
+     "input": {
+      "url": "https://open-meteo.com/en/terms"
+     },
+     "name": "probe_url",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_bdrk_01JqQsb8tzTNT5DjbkbsmepK",
+     "content": "{\"url\": \"https://open-meteo.com/en/terms\", \"final_url\": \"https://open-meteo.com/en/terms\", \"status\": 200, \"error\": null, \"content_type\": \"text/html; charset=utf-8\", \"content_length_header\": null, \"last_modified_header\": \"Sun, 15 Nov 2026 21:35:11 GMT\", \"bytes_read\": 38673, \"truncated\": false, \"from_cache\": false, \"format\": \"html\", \"title\": \"🧑‍⚖️ Terms | Open-Meteo.com\", \"text_start\": \"🧑‍⚖️ Terms | Open-Meteo.com Open-Meteo Home Features Pricing API Docs Animations Toggle theme Terms & Privacy Terms of Use Open-Meteo assumes no responsibility for any inaccuracies or omissions in the data, their availability, or any losses or damages resulting from their usage. The accuracy and completeness of the data products and their uninterrupted provision are not guaranteed by Open-Meteo, and they are provided without any warranty, either statutory or otherwise. In any event, Open-Meteo disclaims all liability under these Terms of Use, whether arising from contract, tort, or any other cause. Non-Commercial Use By using the Free API for non-commercial use you agree to following terms: Less than 10'000 API calls per day, 5'000 per hour and 600 per minute. You may only use the free API services for non-commercial purposes. You accept to the CC-BY 4.0 licence, as specified in the licence conditions . We reserve the right to block applications and IP addresses that misuse our service without prior notice. Rate limits are applied by IP addresses and application. If you are using providers like Vercel, Netlify, Render, or Google Sheets you might be rate-limited earlier then expected. Consider using Cloudflare Workers, as we apply limits per Cloudflare user. Non-commercial use is defined as elaborated by creative commons . To make it easier to understand, here are some examples that qualify as non-commercial use: Private or non-profit websites or apps that do not have subscriptions or advertising. Personal home automation purposes. Public research conducted at public institutions. Use in educational content. Voluntary donations, including contributions through a tip jar, are permitted. On the other hand, the following examples are considered commercial use: Websites or apps that have subscriptions or display advertisements. Commercial products or promotional activities. Undisclosed research at commercial entities. If you plan to use our service for commercial purposes or require additional API calls, we kindly request you to consider subscribing to our API plans as explained in detail on the pricing page. Your subscription helps support the continuous development, maintenance, and support of Open-Meteo. API Subscription When using the paid API subscription , you agree to the following terms: By subscribing to our service, you authorize us to charge the applicable subscription fees through the payment gateway Stripe. You agree to provide accurate and up-to-date payment information and promptly update it if there are any changes. Account and Security: You are responsible for maintaining the confidentiality and security of your account login credentials. You agree not to share your account or login information with any third party. You are solely responsible for any activities that occur under your account. Intellectual Property: All intellectual property rights in our SaaS service, including but not limited to software, content, and trademarks, belong to us. You are granted a limited, non-exclusive, and non-transferable licence to use our service for the duration of your subscription. The data obtained through the API is provided under the terms of the CC-BY 4.0 licence, as specified in the licence conditions . Limitation of Liability: Our service is provided on an \\\"as is\\\" and \\\"as available\\\" basis without any warranties, express or implied. We do not guarantee the accuracy, completeness, or reliability of our service or its suitability for\", \"text_chars\": 9904, \"licence_snippets\": [\"🧑‍⚖️ Terms | Open-Meteo.com Open-Meteo Home Features Pricing API Docs Animations Toggle theme Terms & Privacy Terms of Use Open-Meteo assumes no responsibility for any inaccuracies or omissions in the data, their availability, or any losses or damages resulting from their usage. The accuracy and completeness of the data products and their u\", \"aranteed by Open-Meteo, and they are provided without any warranty, either statutory or otherwise. In any event, Open-Meteo disclaims all liability under these Terms of Use, whether arising from contract, tort, or any other cause. Non-Commercial Use By using the Free API for non-commercial use you agree to following terms: Less than 10'000 API calls per day, 5'000 per hour and 600 per minu\", \"5'000 per hour and 600 per minute. You may only use the free API services for non-commercial purposes. You accept to the CC-BY 4.0 licence, as specified in the licence conditions . We reserve the right to block applications and IP addresses that misuse our service without prior notice. Rate limits are applied by IP addresses and application. If you are using providers like Vercel, Net\", \"e rate-limited earlier then expected. Consider using Cloudflare Workers, as we apply limits per Cloudflare user. Non-commercial use is defined as elaborated by creative commons . To make it easier to understand, here are some examples that qualify as non-commercial use: Private or non-profit websites or apps that do not have subscriptions or advertising. Personal home automation purposes. Publ\", \" our SaaS service, including but not limited to software, content, and trademarks, belong to us. You are granted a limited, non-exclusive, and non-transferable licence to use our service for the duration of your subscription. The data obtained through the API is provided under the terms of the CC-BY 4.0 licence, as specified in the licence conditions . Limitation of Liability: Our ser\", \"ervice after 14 days. Upon termination, your access to the service and any associated data may be immediately deactivated. We reserve the right to modify these terms of use at any time. Any changes will be effective immediately upon posting the revised terms on our website. All changes are transparently tracked on GitHub . Governing Law: These terms of use shall be governed by and construe\", \"and. Any disputes arising from or in connection with these terms shall be subject to the exclusive jurisdiction of the courts in Switzerland. Please read these terms of use carefully before using our paid API subscription. If you have any questions or concerns, please contact us at info@open-meteo.com . Free / Open-Access API Standard API Professional API Enterprise Commercial use ❌ ✅ ✅ ✅ \", \"e 6 6463 Bürglen (UR) Switzerland CEO: Patrick Zippenfenig VAT CHE 332.429.722 MWST Contact: info@open-meteo.com Open-Meteo Features Pricing About us & Contact Licence Terms & Privacy Weather APIs Weather Forecast API Historical Weather API ECMWF API GFS & RRFS Forecast API Météo-France API DWD ICON API GEM API JMA API Met Norway API Other APIs Ensemble API Climate Change API Marine W\"], \"licence_links\": [\"#terms\", \"/en/licence\", \"/en/terms\", \"https://github.com/open-meteo/open-meteo-website/commits/main/src/routes/en/terms/%2Bpage.svelte\", \"https://open-meteo.com/en/terms\", \"https://wiki.creativecommons.org/wiki/NonCommercial_interpretation\"]}"
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "signature": "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",
+     "thinking": "",
+     "type": "thinking"
+    },
+    {
+     "id": "toolu_bdrk_01YEqbhY3eqzPLn8zPQzSvtM",
+     "input": {
+      "source_id": "api.open_meteo_archive",
+      "kind": "public_api",
+      "title": "Open-Meteo Historical Weather API (reanalysis archive)",
+      "summary": "Gridded historical weather API returning hourly and daily values (including daily maximum 2 m temperature, temperature_2m_max) for any latitude/longitude, sourced from ERA5 / ERA5-Land reanalysis and ECMWF IFS (9 km from 2017). The probe at 45.44N, 10.99E returned values for 2026-03-25 to 2026-03-31 in Europe/Rome local days, so the recent window is reachable; the free tier is documented as non-commercial only, which conflicts with the register's production approval for this shop.",
+      "schema": {
+       "documented": "structured",
+       "field_count": null,
+       "fields": [
+        {
+         "name": "latitude",
+         "type": "number",
+         "description": "Requested coordinate; grid point returned (probe: 45.448154)",
+         "unit": "degrees"
+        },
+        {
+         "name": "longitude",
+         "type": "number",
+         "description": "Requested coordinate; grid point returned (probe: 11.003136)",
+         "unit": "degrees"
+        },
+        {
+         "name": "daily.time",
+         "type": "date string",
+         "description": "Local calendar day when timezone=Europe/Rome (ISO 8601)",
+         "unit": "YYYY-MM-DD"
+        },
+        {
+         "name": "daily.temperature_2m_max",
+         "type": "number",
+         "description": "Daily maximum air temperature at 2 m",
+         "unit": "°C"
+        },
+        {
+         "name": "hourly.temperature_2m",
+         "type": "number",
+         "description": "Hourly air temperature at 2 m",
+         "unit": "°C"
+        },
+        {
+         "name": "hourly.shortwave_radiation",
+         "type": "number",
+         "description": "Shortwave radiation",
+         "unit": "W/m²"
+        }
+       ],
+       "notes": "Structure confirmed from a live probe (JSON). Variable list documented on the historical API docs page; full schema not read in detail."
+      },
+      "temporal": {
+       "start": "1940-01-01",
+       "end": null,
+       "grain": "daily",
+       "metadata_last_updated": "2026-11-15",
+       "open_ended": true,
+       "refresh_cadence": "unknown"
+      },
+      "spatial": {
+       "coverage": [
+        "IT"
+       ],
+       "code_system": "decimal latitude/longitude (WGS84); no country or place codes",
+       "notes": "Register default point 45.44, 10.99 is not a recorded shop location; the grid point used by the probe was 45.448154, 11.003136, elevation 69 m. Choice of city/point must be justified and logged. The API accepts any coordinate worldwide."
+      },
+      "ownership": {
+       "owner": "Open-Meteo.com (Switzerland; CEO named on the terms page)",
+       "publisher": "Open-Meteo.com",
+       "steward": null
+      },
+      "licence": {
+       "name": "CC BY 4.0 for the data (per licence page); free API use restricted to non-commercial use (per terms page)",
+       "evidence": "probe_url https://open-meteo.com/en/licence: 'API data are offered under Attribution 4.0 International (CC BY 4.0)'. probe_url https://open-meteo.com/en/terms: 'Non-Commercial Use ... You may only use the free API services for non-commercial purposes'; commercial examples include 'Commercial products or promotional activities'; 'Free / Open-Access API ... Commercial use ❌'. Historical docs page (probe_url) shows 'Usage licence: Non-Commercial Commercial Self-Hosted'. list_external_register: agreement_status 'not_required_open_data', approved_purposes ['prototyping', 'production'].",
+       "url": "https://open-meteo.com/en/terms",
+       "commercial_use": "no",
+       "attribution_text": "Weather data by Open-Meteo.com (link required, per licence page)",
+       "mixed_sources": true,
+       "agreement_status": "not_required_open_data per register; conflicts with terms page for commercial use on the free API"
+      },
+      "access": {
+       "method": "rest_api",
+       "auth_required": false,
+       "reachable": true,
+       "approx_size_bytes": 5344,
+       "classification": "public",
+       "request_process": "Commercial use of the free API is not permitted per terms; a paid API subscription (Standard/Professional/Enterprise, where commercial use is allowed) is needed for Valdena's business use. Legal review of this conflict with the register's 'production' approval is required before production use. Rate limits: <10,000 calls/day, 5,000/hour, 600/minute on the free tier."
+      },
+      "declared_metadata": {
+       "has_missing_values": null,
+       "contains_pii": "no",
+       "default_query_in_register": {
+        "latitude": "45.44",
+        "longitude": "10.99",
+        "start_date": "2014-01-01",
+        "end_date": "2014-01-03",
+        "hourly": "temperature_2m,shortwave_radiation",
+        "timezone": "UTC"
+       }
+      },
+      "documentation_excerpts": [
+       "Gap-free and consistent historical weather data using weather reanalysis from ERA5 (0.25°, from 1940) and ERA5-Land (0.1°, from 1950) and ECMWF IFS (9 km, from 2017). (historical docs page)",
+       "You may only use the free API services for non-commercial purposes. (terms page)",
+       "Commercial use: Free / Open-Access API ❌; Standard API ✅; Professional API ✅; Enterprise ✅. (terms page)",
+       "The data obtained through the API is provided under the terms of the CC-BY 4.0 licence (terms page); API data are offered under Attribution 4.0 International (CC BY 4.0) (licence page)."
+      ],
+      "quality_notes": [
+       "Licence conflict: licence page and terms page say the data is CC BY 4.0, but the terms page restricts the free API to non-commercial use and lists 'Commercial products or promotional activities' as commercial. Valdena Gelato Shop is a commercial business, so the free endpoint is not licensed for its use. The register's agreement_status 'not_required_open_data' with approved purpose 'production' does not reflect this. Recorded as a blocker pending Legal review, not resolved here.",
+       "Register default query is hourly in UTC; for a daily sales-day match, query daily temperature_2m_max with timezone=Europe/Rome. The probe with that timezone returned daily dates in local time (utc_offset_seconds 3600) and 7 days of daily values, so local-day alignment is supported.",
+       "Grid-point snapping: requested 45.44/10.99 returned 45.448154/11.003136 (elevation 69 m). The grid point, not the shop address, sets the temperature series. A shop location or city choice must be documented in decisions.md.",
+       "Reanalysis lag and revision policy near the as-of date (2026-10-15) were not documented in any source read; the recent window ends 2026-03-31, so it is well inside the probed range, but revision behaviour is unknown.",
+       "Historical docs page offers ERA5 (from 1940) and ERA5-Land (from 1950), and ECMWF IFS 9 km (from 2017). Which model the API returns by default for a given date range was not confirmed; the history window (2023-06 to 2025-05) would be covered under any of them.",
+       "Pricing and the paid subscription cost were not checked; a cost estimate is needed if a paid plan is required."
+      ],
+      "sample_findings": [
+       "Probe call_public_api (start 2026-03-25, end 2026-03-31, daily=temperature_2m_max, timezone=Europe/Rome): HTTP 200, JSON, 7 daily dates 2026-03-25 to 2026-03-31; temperature_2m_max values in °C, e.g. 17.9, 13.1, 16.1 (no sentinel values seen in the 7 days shown).",
+       "Probe response also returned hourly temperature_2m and shortwave_radiation (168 hours) because the default hourly list was merged into the query; no negative temperatures in the shown values (wintertime values only, so summer range not tested).",
+       "Probe result utc_offset_seconds 3600 and timezone_abbreviation GMT+1 confirm local-day timestamps (daily.time is local date).",
+       "No sample of the summer 2023-2025 windows was pulled; the summer values for the history window are not checked by this probe."
+      ],
+      "unknowns": [
+       "Whether the paid subscription covers Valdena's use, its price and terms (not read).",
+       "Reanalysis lag and revision policy near the as-of date; whether the recent window data are final.",
+       "Which model (ERA5, ERA5-Land or IFS) is returned for each date range, and at what resolution.",
+       "Whether a shop location exists in the data (the grid point is not the shop address).",
+       "Data owner's support or steward contact beyond the company; no formal SLA found.",
+       "Refresh cadence of the archive (not stated in any page read)."
+      ],
+      "provenance": [
+       {
+        "claim": "Endpoint https://archive-api.open-meteo.com/v1/archive returned HTTP 200 JSON with daily temperature_2m_max for 2026-03-25 to 2026-03-31 in Europe/Rome local time.",
+        "evidence": "call_public_api api.open_meteo_archive, query start_date 2026-03-25, end_date 2026-03-31, daily temperature_2m_max, timezone Europe/Rome"
+       },
+       {
+        "claim": "Register entry: agreement_status not_required_open_data; approved_purposes prototyping and production; default coordinates 45.44/10.99, timezone UTC, hourly temperature_2m and shortwave_radiation.",
+        "evidence": "list_external_register, entry api.open_meteo_archive"
+       },
+       {
+        "claim": "Data offered under CC BY 4.0 per licence page; free API restricted to non-commercial use per terms page.",
+        "evidence": "probe_url https://open-meteo.com/en/licence and https://open-meteo.com/en/terms"
+       },
+       {
+        "claim": "Historical docs state ERA5 from 1940, ERA5-Land from 1950, ECMWF IFS 9 km from 2017; a 'Usage licence: Non-Commercial' selector is shown on the historical API page.",
+        "evidence": "probe_url https://open-meteo.com/en/docs/historical-weather-api"
+       },
+       {
+        "claim": "Probe grid point returned 45.448154 N, 11.003136 E, elevation 69 m, utc_offset 3600 s.",
+        "evidence": "call_public_api api.open_meteo_archive response shape"
+       }
+      ],
+      "status": "active"
+     },
+     "name": "submit_catalog_record",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_bdrk_01YEqbhY3eqzPLn8zPQzSvtM",
+     "content": "accepted"
+    }
+   ]
+  }
+ ]
+}

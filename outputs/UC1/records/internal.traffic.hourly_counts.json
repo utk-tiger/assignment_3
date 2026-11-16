@@ -1,0 +1,129 @@
+{
+  "source_id": "internal.traffic.hourly_counts",
+  "kind": "internal",
+  "title": "Road traffic counts (hourly)",
+  "summary": "Hourly vehicle counts per road counter (counter_id, hour start in local time, vehicles) from road counters near the monitoring stations, owned by the Mobility Office. Catalog reports about 15 million rows, coverage from 2021-01-01 with no end date, and hourly refresh (last refreshed 2026-10-12). The counter-to-station mapping and direction handling are not documented; a 2024-03-18 counter replacement changed the count basis from per-direction to both-directions combined, so pre- and post-change counts are not directly comparable.",
+  "schema": {
+    "documented": "structured",
+    "field_count": 3,
+    "fields": [
+      {
+        "name": "counter_id",
+        "type": "string",
+        "description": "Road counter code",
+        "pii": false,
+        "unit": null
+      },
+      {
+        "name": "ts_local",
+        "type": "timestamp",
+        "description": "Hour start, local time",
+        "pii": false,
+        "unit": "local time (timezone not stated)"
+      },
+      {
+        "name": "vehicles",
+        "type": "integer",
+        "description": "Vehicles counted in the hour",
+        "pii": false,
+        "unit": "vehicles per hour"
+      }
+    ],
+    "notes": "Catalog lists three columns only. No station, road segment, direction or coordinate fields. Direction semantics change on 2024-03-18 per wiki (not reflected in the schema)."
+  },
+  "temporal": {
+    "start": "2021-01-01",
+    "end": null,
+    "grain": "hourly",
+    "metadata_last_updated": "2026-10-12",
+    "open_ended": true,
+    "refresh_cadence": "hourly (catalog refresh_cadence field)"
+  },
+  "spatial": {
+    "coverage": [
+      "IT"
+    ],
+    "code_system": "free-text/opaque counter_id codes; no mapping to stations or coordinates",
+    "notes": "Catalog describes counters as 'near the monitoring stations' but gives no location, station mapping or distance. Country inferred from the use case (Valdena, northern Italy, fictional); not stated in the catalog entry."
+  },
+  "ownership": {
+    "owner": "Mobility Office",
+    "publisher": null,
+    "steward": "Luca Ferri"
+  },
+  "licence": {
+    "name": "internal",
+    "evidence": "Catalog classification 'internal' (internal.traffic.hourly_counts get_catalog_entry); no separate licence statement found.",
+    "agreement_status": null,
+    "attribution_text": null,
+    "commercial_use": "not_applicable",
+    "url": null,
+    "mixed_sources": false
+  },
+  "access": {
+    "method": "warehouse_sql",
+    "auth_required": true,
+    "reachable": null,
+    "classification": "internal",
+    "request_process": "Request to the Mobility Office (catalog access.request_process)",
+    "approx_size_bytes": null
+  },
+  "declared_metadata": {
+    "contains_pii": false,
+    "status": "active",
+    "classification": "internal",
+    "grain": "hourly",
+    "row_count_approx": 15000000,
+    "refresh_cadence": "hourly",
+    "last_refreshed": "2026-10-12",
+    "catalog_exported_at": "2026-10-14T06:00:00Z"
+  },
+  "documentation_excerpts": [
+    "Wiki counter_replacement_2024 (owner Mobility Office, last_edited 2024-04-02): 'On 2024-03-18 the road counters were replaced.'",
+    "Wiki counter_replacement_2024: 'Before that date, counts were recorded per direction. From 2024-03-18, counts are both directions combined.'",
+    "Wiki counter_replacement_2024: 'Do not compare counts across the change without adjusting for it. The catalog entry for traffic.hourly_counts has no note about this.'",
+    "Catalog columns ts_local: 'Hour start, local time'; vehicles: 'Vehicles counted in the hour'."
+  ],
+  "quality_notes": [
+    "Counter replacement on 2024-03-18 (inside the production window 2024-01-01 to 2025-12-31) changed count basis from per-direction to both directions combined. Source: wiki counter_replacement_2024 (last_edited 2024-04-02). Catalog entry has no note (catalog export 2026-10-14). Counts before and after are not directly comparable without adjustment.",
+    "Catalog and wiki are consistent on the change date and the owner; the catalog is silent on the change, so the wiki is the only documentation of it.",
+    "ts_local is stored as local time with no timezone stated; air-quality feeds in UTC require DST-aware conversion for hourly joins (catalog column description; timezone handling not documented).",
+    "No documented mapping from counter_id to monitoring station, road segment or distance; N2 'near the monitoring stations' criterion cannot be verified from the catalog.",
+    "Missing hours, outages and zero-count semantics (zero vs. no record) are not documented.",
+    "Row count is approximate (15,000,000) and not broken down by counter or year.",
+    "No sample was taken: the source is a warehouse table reachable only through the Mobility Office request process, so value-level checks (sentinels, negatives, gaps) are unverified."
+  ],
+  "provenance": [
+    {
+      "claim": "Source is owned by Mobility Office, steward Luca Ferri, status active, classification internal, contains_pii false",
+      "evidence": "get_catalog_entry internal.traffic.hourly_counts"
+    },
+    {
+      "claim": "Coverage starts 2021-01-01 with no end date; refresh cadence hourly; last refreshed 2026-10-12; approx 15,000,000 rows",
+      "evidence": "get_catalog_entry internal.traffic.hourly_counts (temporal_coverage, refresh_cadence, last_refreshed, row_count_approx)"
+    },
+    {
+      "claim": "Counters were replaced 2024-03-18; counts changed from per-direction to both directions combined; catalog has no note on this",
+      "evidence": "read_wiki_page counter_replacement_2024 (last_edited 2024-04-02)"
+    },
+    {
+      "claim": "Access is via warehouse_sql on request to the Mobility Office; location azure://valdena-health/mobility/traffic_hourly",
+      "evidence": "get_catalog_entry internal.traffic.hourly_counts (access, location)"
+    },
+    {
+      "claim": "ts_local is hour start in local time; vehicles is an integer count; counter_id is a string code",
+      "evidence": "get_catalog_entry internal.traffic.hourly_counts (columns)"
+    }
+  ],
+  "unknowns": [
+    "Whether the source is reachable from this environment and whether access has been granted (not tested; request via Mobility Office).",
+    "Timezone of ts_local (documented only as 'local time').",
+    "Counter locations, road segments and distances to monitoring stations.",
+    "Missing-hour / outage rates and treatment of zero counts.",
+    "Value distribution, negatives or sentinel values (no sample taken).",
+    "Licence or usage terms beyond the internal classification.",
+    "Approximate file size in bytes.",
+    "Whether the 2024-03-18 change was adjusted in the warehouse; whether any counters were added or removed beyond the replacement.",
+    "Exact country and city of the counters (only inferred from the use case)."
+  ]
+}

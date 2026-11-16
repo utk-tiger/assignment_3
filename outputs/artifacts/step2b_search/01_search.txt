@@ -1,0 +1,27 @@
+Model: gemini-3.8-flash
+Query: Open dataset of hourly validated NO2 and PM2.5 measurements from Italian urban air quality monitoring stations covering March 2004 to April 2005, for example EEA AirBase or a regional ARPA open data portal. Give the exact dataset page URL and the years it covers.
+
+An open dataset providing hourly validated $\text{NO}_2$ and $\text{PM}_{2.5}$ measurements from Italian urban monitoring stations covering March 2004 to April 2005 is **EEA AirBase (Version 8)**:
+
+### **Dataset Details**
+* **Dataset:** AirBase – The European air quality database (Version 8)
+* **Dataset Page URL:** [https://www.eea.europa.eu/data-and-maps/data/airbase-the-european-air-quality-database-8](https://www.eea.europa.eu/data-and-maps/data/airbase-the-european-air-quality-database-8)
+* **Years Covered:** **1969 – 2012** (systematic, dense monitoring across Italian urban and regional networks is available from the late 1990s through December 31, 2012, directly encompassing March 2004 to April 2005).
+
+---
+
+### **How to Access the Data**
+1. On the AirBase v8 dataset page under the **Data by country** tab, select **Italy (IT)**.
+2. The downloaded archive provides individual station time-series files (containing hourly validated measurements and validation quality flags) classified by site typology, including **Urban Traffic** and **Urban Background** stations, for both nitrogen dioxide ($\text{NO}_2$, pollutant code 8) and fine particulate matter ($\text{PM}_{2.5}$, pollutant code 6001).
+
+*(Note: Starting with reporting year 2013 onwards, AirBase was succeeded by the EEA's [Air Quality e-Reporting (AQER)](https://www.eea.europa.eu/data-and-maps/data/aqereporting-8) system, while the historical pre-2013 data continues to be hosted via the AirBase archives).*
+
+Citations:
+  [1] researchgate.net: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFBzofD9IeabPcmZ4-P5AAurA-XB3dABblfWLCAA9G5kvfxCRcsbbvv7Y0TQgY8XH7BTuWdZlsiWIowlfJf19lFDkSfnQY95tvVsSFNiW7Jn93r3rIS0hCeGiohzMZqSQ-K_uOdEH7rasb9S9WAt3nrX8vlwETGiWrR7P4v6ugG0nxTIoLpzFQ2BNYUBg==
+       supports: **Dataset:** AirBase – The European air quality database (Version 8) *
+  [2] mdpi.com: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFrGfn6r7joxvk_JkxyeOAnvS-WgvbyzAb-J2qAJ5YR3Fc-11sbiOx7gLgQy0_VKcCS0lDyrvrtp7yvoiby5xklfERaVHoUY5h1aPGAVhabeZPB8ttH5vmKbg90g8hsvT0D7g==
+       supports: Dataset Page URL:** [https://www.eea.europa.eu/data-and-maps/data/airbase-the-european-air-quality-database-8](https://www.eea.europa.eu/data-and-maps/data/airbase-the-european-air-quality-database-8)
+  [3] healthdata.org: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHC578Nq_r57iuJHexjQFUNMIpMFWXCdPb5QziXRKnhnwmGZO60ipfrvKBx2jRABwkFjYk-cHrCTOrD_6UFtBMxgUZhxy2b_gK0nwgLoE4fGg0aB2GvtfAqFKHCh1xm68T4tzdulYkoECnwBXR3zegGAHIfPqX732mNaj2WBZqHJTlbUzsK4JWS9J-rEUkbjNNUCw==
+       supports: Years Covered:** **1969 – 2012** (systematic, dense monitoring across Italian urban and regional networks is available from the late 1990s through December 31, 2012, directly encompassing March 2004 t
+  [4] europa.eu: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHT5Id1LvKXdSUmQ5zsE50QGaMZE711XRLHp-ekLGVQyw4fOlgpU2hx-sAfOlDgdYleLluBouGoCqJA9AFzBiijVnAu_aw4pSFDEfz6yqgRU1fbXXDBKponrHoT7yoqu6pk4_8wOil4r7KCc61OPGq_q-cRbVBbnIflSrDoPDkUtoCKI9Yrqn2A3CCkcrQLpbXzx4O7uKKickCUR5Ez7BhohvVDhAkthuaqv6lwcFIa123unnO17gPmKjfI6OV2kHbZ1gbT-HqwG4FifuAQhK2yMf66ALh_ZLuqFt-_qUiHw1Tcle9Ooa0MYLWH6FkMqYjaZaBX5fqoh003jRk4WKBEv9X_zXBgiQqsEQ0RmhqTbN4ctVmJYi_FGgAqBeqyv-PUygkoRq9rvYM-d3wp5mApsnRbUmy41lUwfKkzPALvBVpIe_cwjmJ8defxtGbg0vapH-nT
+       supports: te: Starting with reporting year 2013 onwards, AirBase was succeeded by the EEA's [Air Quality e-Reporting (AQER)](https://www.eea.europa.eu/data-and-maps/data/aqereporting-8) system, while the histor

@@ -255,4 +255,57 @@ Write these answers in this README, under this heading. Keep each answer short.
 - One rule or agent correction you made, and what it changed.
 - One change a new use case would need in the skill or the inputs.
 
+### Answers
+
+utkarshyogeshsaxena, 2026-11-16. The decisions referred to below are recorded in `outputs/artifacts/decisions.md` and the review files.
+
+#### Reuse check
+I started a fresh Claude Code session with only the skill and the README and answered its STOPs (`outputs/artifacts/reuse_check_UC2/session_transcript.md`). It ran Steps 0–2b for UC2 in a clean copy of the repo. I rejected all five suggestions, so the result is "none accepted" and nothing was profiled (`decisions_fresh_session.md`). The skill was revised afterwards (commit "Reuse check (UC2, fresh Claude Code session, Steps 0-2b) …").
+- **Steps that could not be followed as written** (`findings.md`):
+  - Step 0.3 said the gap tests are "expected to fail", but all 52 pass in the finished repo.
+  - Step 0.2 assumed the gateway variables were already exported. Nothing said to load them from `.env`.
+  - Step 0.4's smoke test hard-coded a UC1 link.
+  - Step 2b: `scripts/web_search.py` was missing (by design), and I had to paste the README prompt to have it generated.
+  - Search citations came back as Google redirect URLs. WebFetch was not permitted, and the session treated the pipeline allowlist as covering its own page checks, so three of five pages were never read.
+  - No step checked the register's weather coordinates against the use case's geography.
+  - Steps 2.4 and 2b.5 named UC1's links and hosts.
+
+  Each of these is now reworded in the skill.
+- **Inputs a data scientist would replace:** the use-case JSON and brief; the catalog export and wiki under `internal/<ID>_<client>/`; the register entries; the exact allowlist hosts for new links (G6); the dataset links and their gate decisions; and the weather API's latitude and longitude, which is the only permitted config change (skill section "Reusing this skill on a new use case").
+- **Values hard-coded for UC1 or UC2, and what changed:**
+  - In the skill: the UCI 360 smoke-test URL, the UC1 prescribed-link wording and the Chicago and Eurostat host notes. All are now generic.
+  - In config: Open-Meteo's `default_query` pointed at Lisbon (38.72, -9.14). Its latitude and longitude were changed to Verona (45.44, 10.99) and the change was logged.
+  - Nager.Date has no default country, so `IT` has to come from the probe arguments.
+  - In the code: no hard-coded value was found that changed results.
+
+#### Delivery reflection (UC1 Step 2b source shortlist, S1–S5)
+- **Who did what:**
+  - The assistant (Claude Code) generated `scripts/web_search.py` from the README prompt, ran the five searches (`outputs/artifacts/step2b_search/01–05_search.txt`), fetched each publisher page's metadata on 2026-11-15 UTC and recorded what it states in `verification.md`.
+  - I decided in two passes: a first pass rejected all five; a second pass re-opened the pages looking for a defensible role and revised S3 to ARPA Lombardia "Temperatura fino al 2010" (decisions.md, "Source suggestions").
+- **What still had to be checked:**
+  - Two search claims did not hold at the source. S3's page says "nel mese in corso", meaning the current month only. S4's record covers 2005–2021, not the 2005–2023 the search reported.
+  - The one acceptance was checked against the publisher's metadata (`/api/views/6eu4-4tja.json`: CC0 1.0, data from 1987-11-25 to 2011-01-01).
+  - The Lombardia host still needed a G6 decision before it could be profiled.
+- **Review time:** I did not measure my review time, so I make no time-saving claim.
+- **Model usage:** the figures below are computed by summing `totals` across every line of `outputs/<ID>/run_history.jsonl`.
+
+  | Use case | Lines | LLM calls | Input tokens | Output tokens |
+  |---|---|---|---|---|
+  | UC1 | 12 | 56 | 887,656 | 236,239 |
+  | UC2 | 3 | 33 | 391,970 | 92,664 |
+  | UC1 plan + scout only (line 1, the stage just before Step 2b) | 1 | 7 | 83,189 | 11,591 |
+
+  These totals include the re-runs of assess and memo for G5 and G7, and the final re-profile of the Lombardia link after the e-mail masking fix. They do not include the gateway web searches made by `scripts/web_search.py`, or the Claude Code session usage itself. Step 2b itself has no line in run_history.jsonl, and the G5 "before" assess run was written to a scratch folder with `--out`, so it is not counted either. Timestamps in run_history.jsonl are UTC (2026-11-15), while decisions.md uses my local date (2026-11-16).
+
+#### Ownership
+- **One source selected:** ARPA Lombardia S3 was revised, not rejected.
+  - The suggested feed (647i-nhxk) holds only the current month.
+  - The same publisher's "Temperatura fino al 2010" (6eu4-4tja) is CC0 and has station observations covering the 2004–05 prototype window.
+  - It was accepted for N3 (prototype) only, as a benchmark for Open-Meteo. It does not replace Open-Meteo.
+- **One correction:** G7 fixed calibration rule 7 in `discovery_agent/prompts/risk_assessor.md`.
+  - The Risk Assessor had read "mapping not documented" as "documentation says no mapping exists" for `internal.traffic.hourly_counts`.
+  - After the fix, that source moved from not_feasible to feasible_with_conditions, N2 moved from unmet to met_with_conditions, and the UC1 overall verdict moved from not_feasible to feasible_with_conditions.
+  - UC2's documented impossibility (product codes) stayed not_feasible.
+- **One change a new use case needs:** check the register's default query against the new geography before any probe. Today that means the weather API's coordinates, since Lisbon was the default for an Italian client. Log any permitted change in decisions.md. Step 1 of the skill now includes this check. Regenerate `scripts/web_search.py` if it is missing.
+
 *The companies, people and internal documents are fictional. The public datasets and APIs are real; their terms belong to their providers and must be read at the source.*

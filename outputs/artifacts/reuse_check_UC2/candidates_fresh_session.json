@@ -1,0 +1,133 @@
+{
+  "candidates": [
+    {
+      "source_id": "internal.sales.daily_by_product",
+      "kind": "internal",
+      "title": "Daily sales by product (till system)",
+      "need_ids": [
+        "N1"
+      ],
+      "target_windows": [
+        "history",
+        "recent"
+      ],
+      "why_relevant": "Catalog describes units_sold and revenue_eur per sale_date and product_code, daily grain, refreshed daily (last_refreshed 2026-10-14), temporal_coverage start 2022-01-01 with end open. Covers both windows on paper; no PII flagged.",
+      "found_via": "search_internal_catalog; get_catalog_entry internal.sales.daily_by_product",
+      "suspected_issues": [
+        "Till replaced 2024-02-05 to 2024-03-10: no rows for those days (wiki till_migration_2024), must be treated as missing, not zero; count of missing days not yet profiled",
+        "Product codes changed from 2024-04-01; codes ending in 'L' replaced (wiki product_codes_2024, last edited 2024-04-02); same product appears under two codes",
+        "Wiki dates for the till replacement (Feb-Mar 2024) and the code change (Apr 2024) differ; sequence to be confirmed",
+        "Catalog does not say whether revenue_eur includes VAT; units vs revenue treatment of returns/voids/zero-sales days undocumented",
+        "Classification confidential; access via request to Retail Operations (steward Marco Bianchi)"
+      ],
+      "location": "azure://valdena-gelato/sales/daily_by_product",
+      "canonical_ref": "sales.daily_by_product"
+    },
+    {
+      "source_id": "internal.sales.products",
+      "kind": "internal",
+      "title": "Product list (current codes only)",
+      "need_ids": [
+        "N2",
+        "N1"
+      ],
+      "target_windows": [
+        "recent"
+      ],
+      "why_relevant": "Gives product names and categories for current codes; needed to label N1 rows. Does not hold pre-2024 codes, so it cannot serve as the N2 mapping on its own.",
+      "found_via": "search_internal_catalog; get_catalog_entry internal.sales.products; wiki product_codes_2024 backlink",
+      "suspected_issues": [
+        "Lists only current product codes (wiki product_codes_2024 and catalog description); retired codes absent",
+        "Last refreshed 2025-03-31 per catalog, refresh on change; may not reflect later changes",
+        "~64 rows approx"
+      ],
+      "location": "azure://valdena-gelato/sales/products",
+      "canonical_ref": "sales.products"
+    },
+    {
+      "source_id": "internal.store.calendar",
+      "kind": "internal",
+      "title": "Shop calendar (opening days, closures, local events)",
+      "need_ids": [
+        "N5"
+      ],
+      "target_windows": [
+        "history",
+        "recent"
+      ],
+      "why_relevant": "Catalog has calendar_date, is_open and event_name at daily grain, coverage from 2022-01-01, ~1500 rows, owned by Store Operations. Directly addresses opening/closed status and local events.",
+      "found_via": "search_internal_catalog; get_catalog_entry internal.store.calendar",
+      "suspected_issues": [
+        "No wiki backlinks; no wiki page documents the calendar, so reliability of closures and events is unverified",
+        "Event coverage for past years and end dates unknown",
+        "Refreshed weekly; last_refreshed 2026-10-10"
+      ],
+      "location": "azure://valdena-gelato/store/calendar",
+      "canonical_ref": "store.calendar"
+    },
+    {
+      "source_id": "api.open_meteo_archive",
+      "kind": "public_api",
+      "title": "Open-Meteo Historical Weather API (reanalysis)",
+      "need_ids": [
+        "N3"
+      ],
+      "target_windows": [
+        "history",
+        "recent"
+      ],
+      "why_relevant": "Register lists daily reanalysis for the windows; approved for prototyping and production; no agreement needed. Requires daily temperature_2m_max with timezone Europe/Rome and an assumed northern-Italy coordinate recorded in decisions.md.",
+      "found_via": "list_external_register",
+      "suspected_issues": [
+        "Register default_query uses UTC, hourly variables and 2014 dates; must not be reused for analysis windows",
+        "Reanalysis grid cell, not the shop's microclimate; no station-level accuracy claim",
+        "Keep probe ranges small"
+      ],
+      "location": "https://archive-api.open-meteo.com/v1/archive",
+      "canonical_ref": "api.open_meteo_archive"
+    },
+    {
+      "source_id": "api.nager_public_holidays",
+      "kind": "public_api",
+      "title": "Nager.Date public holidays API",
+      "need_ids": [
+        "N4"
+      ],
+      "target_windows": [
+        "history",
+        "recent"
+      ],
+      "why_relevant": "Returns national public holidays by year and country code; register lists it for prototyping and production with no agreement needed. Covers 2023-2026 years needed by both windows.",
+      "found_via": "list_external_register",
+      "suspected_issues": [
+        "National holidays only; regional patron-saint holidays for the assumed city not covered and need a separate source",
+        "Country code must be IT (register param notes give examples of other countries)"
+      ],
+      "location": "https://date.nager.at/api/v3/PublicHolidays/{year}/IT",
+      "canonical_ref": "api.nager_public_holidays"
+    }
+  ],
+  "rejected_without_profiling": [
+    {
+      "source_id": "policy.open_data_links",
+      "reason": "Policy document for analyst-supplied dataset links, not a data source for this use case."
+    }
+  ],
+  "searches_run": [
+    "Valdena daily sales by product",
+    "ice cream POS sales export daily",
+    "product code mapping 2024 SKU migration crosswalk",
+    "shop opening hours closure log local events calendar",
+    "list_external_register (no args)",
+    "legacy item code to new item code article code change history",
+    "sales daily archive superseded copy till 2023 2024",
+    "temperature weather station shop location Valdena"
+  ],
+  "unmet_needs": [
+    "N2: No mapping table exists between pre-2024 and post-2024 product codes (wiki product_codes_2024, 2024-04-02). Internal sources only offer name matching, and names are not unique. No internal crosswalk candidate found. A product-master export with historical codes, or Retail Operations confirmation of the mapping, is needed from the client.",
+    "N5 local events: no register source for the shop's municipal events calendar. The internal store.calendar has event_name but no wiki documents its coverage. A municipal events dataset would have to be supplied as a link by the human.",
+    "N4 regional holidays for the assumed city: Nager.Date covers national holidays only. No register source for regional or local holidays; the client must confirm whether these are required and who supplies them.",
+    "Shop city: not named in any source. The coordinate choice must be recorded as an assumption in decisions.md by the owner or analyst.",
+    "Licence, consent and owner terms for the internal sales extract are not stated in the catalog beyond classification confidential and access by request; unknown until Retail Operations responds."
+  ]
+}

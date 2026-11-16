@@ -1,0 +1,178 @@
+{
+  "assessments": [
+    {
+      "source_id": "api.nager_public_holidays",
+      "verdict": "not_feasible",
+      "red_flags": [
+        {
+          "code": "LIC-UNKNOWN",
+          "evidence": "licence.name null; licence.evidence: 'No licence for the holiday data or the API output was found in the sources read; the data licence is therefore unknown.' Only the repository code licence (MIT, github.com/nager/Nager.Date) was seen. Rule flag kept.",
+          "severity": "blocker"
+        },
+        {
+          "code": "GOV-OWNER-UNKNOWN",
+          "evidence": "ownership.owner 'unknown'; publisher 'Nager.Date project ... operator of date.nager.at not stated in the sources read'; steward null.",
+          "severity": "major"
+        }
+      ],
+      "conditions": [
+        "If the project wants this source reconsidered, a licence for the holiday data (not the repository code) must be found and the operator identified; this would need a new assessment.",
+        "Alternatively an official Italian holiday calendar source would need to be proposed as a new candidate for N4; none is in the candidate set."
+      ],
+      "rationale": "Rule 1 decided it: LIC-UNKNOWN is a blocker. It is resolvable under rule 2 only when the publisher is an official body with a terms page. The publisher is a GitHub open-source project, and the terms_url points at the code repository, not at terms for the data. So no owner can clear it within the project. The probes also show 2023-2026 coverage for IT, but that does not cure the licence gap. N4 is a should need, but the blocker still gives not_feasible.",
+      "who_can_resolve": [
+        "Legal (licence for holiday data output)",
+        "Data owner to identify the date.nager.at operator and upstream calendar source"
+      ]
+    },
+    {
+      "source_id": "api.open_meteo_archive",
+      "verdict": "not_feasible",
+      "red_flags": [
+        {
+          "code": "LIC-NONCOMMERCIAL",
+          "evidence": "quality_notes: 'Valdena Gelato Shop is a commercial business, so the free endpoint is not licensed for its use.' terms page: 'You may only use the free API services for non-commercial purposes'; 'Commercial use: Free / Open-Access API ❌'. Licence: 'free API use restricted to non-commercial use (per terms page)'.",
+          "severity": "blocker"
+        },
+        {
+          "code": "LIC-MIXED",
+          "evidence": "licence.mixed_sources true; 'Record states that parts come from upstream providers with different terms' (ERA5 / ERA5-Land / ECMWF IFS). Rule flag kept.",
+          "severity": "major"
+        },
+        {
+          "code": "GOV-CATALOG-WIKI-CONFLICT",
+          "evidence": "register: agreement_status 'not_required_open_data' with approved_purposes ['prototyping','production'], versus the terms page restricting commercial use of the free API. licence.agreement_status: 'conflicts with terms page for commercial use on the free API'.",
+          "severity": "major"
+        },
+        {
+          "code": "FRS-METADATA-DATE-MISLEADING",
+          "evidence": "temporal.metadata_last_updated '2026-11-15' is after the as_of date 2026-10-15 and open_ended true; it does not describe the data period.",
+          "severity": "minor"
+        }
+      ],
+      "conditions": [
+        "Do not use the free API for production or any commercial purpose. A paid commercial subscription (Standard/Professional/Enterprise) would be needed; if procured, the source must be re-assessed as a new candidate with its agreement recorded.",
+        "Legal to reconcile the register's 'production' approval with the terms page before any use.",
+        "If used, the attribution 'Weather data by Open-Meteo.com' must be given.",
+        "Location choice: document the grid point (45.448154, 11.003136) versus the shop address in decisions.md, since the grid point is not the shop location."
+      ],
+      "rationale": "Rule 1 decided it. LIC-NONCOMMERCIAL is a blocker. Rule 2 allows it only for prototype or benchmark windows of non-commercial public-sector use. This use case is a commercial shop's production analysis, so it is not_feasible for N3 (a must need) in both windows. The paid-subscription route is not in the record as an active agreement, so it cannot be assumed here.",
+      "who_can_resolve": [
+        "Legal (commercial terms, register conflict)",
+        "Procurement (paid subscription, if a new candidate is pursued)"
+      ]
+    },
+    {
+      "source_id": "internal.sales.daily_by_product",
+      "verdict": "feasible_with_conditions",
+      "red_flags": [
+        {
+          "code": "ACC-RESTRICTED",
+          "evidence": "access.auth_required true; classification 'confidential'; request_process 'Request to Retail Operations (per catalog access.request_process)'. Access not probed.",
+          "severity": "major"
+        },
+        {
+          "code": "INT-NO-JOIN-KEY",
+          "evidence": "wiki product_codes_2024 (last edited 2024-04-02): 'From 2024-04-01, product codes changed. Codes ending in \"L\" were replaced by new codes. No mapping table exists between the old and new codes. Old and new codes can only be matched by product name, and some names are not unique.'",
+          "severity": "major"
+        }
+      ],
+      "conditions": [
+        "Retail Operations grants read access to internal.sales.daily_by_product (ACC-RESTRICTED).",
+        "Treat 2024-02-05 to 2024-03-10 as missing, not zero (wiki till_migration_2024), so these days are excluded or flagged, not counted as zero sales.",
+        "Use product-level analysis across 2024-04-01 only with the old 'L' codes and new codes kept separate; the product-level history before 2024-04-01 cannot be joined to the post-change codes without a mapping that does not exist. Total-level daily sales can still be used across the break.",
+        "Confirm with Retail Operations whether units_sold or revenue_eur is the primary sales measure (catalog does not say).",
+        "Confirm how closed days appear: there is no opening flag, so zero-sales days are indistinguishable from closures unless the shop calendar is used.",
+        "Verify completeness of the recent window to 2026-03-31; the catalog refresh date does not prove the data are complete."
+      ],
+      "rationale": "N1 (must) is served by this source for the recent window (2025-06-01 to 2026-03-31), which lies after the 2024-04-01 code change, so the rule 4 window test is met with conditions. The history window is only partly met at product level because of the code break and the till gap. The source is not blocked by any blocker, so rule 8 applies: the majors have achievable conditions. The INT-NO-JOIN-KEY flag is backed by an explicit wiki statement that no mapping exists and names cannot be matched uniquely, so rule 7 makes N2 not_feasible for this source and the need unmet. That is recorded in need coverage, not as a source-level verdict.",
+      "who_can_resolve": [
+        "Retail Operations (access grant, measure definition, closed-day rule, completeness check)",
+        "Retail Operations or product owner (any mapping that could be produced for N2)"
+      ]
+    },
+    {
+      "source_id": "internal.sales.products",
+      "verdict": "not_feasible",
+      "red_flags": [
+        {
+          "code": "INT-NO-JOIN-KEY",
+          "evidence": "wiki product_codes_2024 (last edited 2024-04-02): 'No mapping table exists between the old and new codes. Old and new codes can only be matched by product name, and some names are not unique.' Source quality_notes: 'lists only current codes'; 'holds no historical or pre-2024 codes and no mapping to them'.",
+          "severity": "major"
+        }
+      ],
+      "conditions": [
+        "None that clear the N2 gap. The N2 mapping must come from another source or a new mapping built and documented by Retail Operations."
+      ],
+      "rationale": "Rule 7 decided it. The wiki states explicitly that no mapping table exists and that the only route is by non-unique names, so the old-to-new crosswalk for N2 cannot be made from this source. The source's only proposed need is N2, so there is no other need it can serve and the verdict is not_feasible. Staleness of the product list (last_refreshed 2025-03-31) is an additional concern but not decisive.",
+      "who_can_resolve": [
+        "Retail Operations (would need to create a new mapping table, which the wiki says does not exist)"
+      ]
+    },
+    {
+      "source_id": "internal.store.calendar",
+      "verdict": "feasible_with_conditions",
+      "red_flags": [
+        {
+          "code": "DQ-METADATA-CONTRADICTION",
+          "evidence": "declared row_count_approx 1500 at daily grain from 2022-01-01 with refresh 2026-10-10; quality_notes: 'From 2022-01-01 to 2026-10-10 there are about 1,744 calendar days, so ~1,500 rows implies roughly 240 days missing, or the row count is stale.'",
+          "severity": "major"
+        },
+        {
+          "code": "DQ-UNDOCUMENTED-SCHEMA",
+          "evidence": "notes: 'Field names and types come from the catalog entry only; no wiki page or schema document was found. Source of event_name values and the rule for is_open on closed days are not documented.' wiki_backlinks 0.",
+          "severity": "major"
+        }
+      ],
+      "conditions": [
+        "Store Operations (steward Elena Russo per catalog) confirms the row count and that every day from 2023-06-01 to 2026-03-31 is present, or supplies the list of missing days.",
+        "Store Operations documents what is_open means on closed days, Sundays and holidays, and what a missing row means.",
+        "Store Operations documents the source of event_name values.",
+        "Access: confirm the requester has the analytics role needed to query the table (access route not tested)."
+      ],
+      "rationale": "N5 (should) is the only need this source serves, and it is a context need. No blocker applies; rule 6 and rule 8 give feasible_with_conditions because both majors have concrete conditions with a named owner. The window coverage is stated but not verified against the row count, so completeness per window is unknown.",
+      "who_can_resolve": [
+        "Store Operations (steward Elena Russo)",
+        "Analytics access administrator"
+      ]
+    }
+  ],
+  "need_coverage": [
+    {
+      "need_id": "N1",
+      "status": "partially_met",
+      "best_sources": [
+        "internal.sales.daily_by_product"
+      ],
+      "gap": "Product-level daily sales are usable for the recent window (2025-06-01 to 2026-03-31) with access granted; for the history window, product-level series cannot be joined across the 2024-04-01 code change, and the 2024-02-05 to 2024-03-10 till gap must be treated as missing."
+    },
+    {
+      "need_id": "N2",
+      "status": "unmet",
+      "best_sources": [],
+      "gap": "Wiki product_codes_2024 states that no mapping table exists between old and new codes and that names are not unique; internal.sales.products holds only current codes."
+    },
+    {
+      "need_id": "N3",
+      "status": "unmet",
+      "best_sources": [],
+      "gap": "The only candidate (api.open_meteo_archive) is licensed for non-commercial use on its free API, which blocks commercial production use; no other temperature source is in the candidate set."
+    },
+    {
+      "need_id": "N4",
+      "status": "unmet",
+      "best_sources": [],
+      "gap": "The only candidate (api.nager_public_holidays) has no licence for its data, the operator is unknown, and no official Italian holiday source was proposed."
+    },
+    {
+      "need_id": "N5",
+      "status": "met_with_conditions",
+      "best_sources": [
+        "internal.store.calendar"
+      ],
+      "gap": "Row count does not match the daily coverage and the is_open and event_name rules are undocumented; Store Operations must confirm completeness and semantics."
+    }
+  ],
+  "overall_verdict": "not_feasible",
+  "overall_rationale": "The must needs N2 (code crosswalk, documented as impossible by the wiki) and N3 (daily max temperature, licence blocks commercial use) are unmet, so the overall verdict is not_feasible. N1 is partially met by internal sales data, usable for the recent window once access is granted. N4 (holidays) is blocked by an unknown licence, and N5 (calendar) is usable with conditions. Clearing N2 or N3 would need a new source or a new licence and a re-assessment."
+}

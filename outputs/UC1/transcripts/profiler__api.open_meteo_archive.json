@@ -1,0 +1,410 @@
+{
+ "agent": "profiler__api.open_meteo_archive",
+ "system": "# Operating rules (all discovery agents)\n\nYou are one agent in a data-discovery system. The goal is to locate, catalog and assess the feasibility of data sources for a business problem **before any pipeline is built**.\n\n- **Metadata first, then a small sample, never the whole dataset.** Work from catalog entries, wiki pages, API metadata, landing pages, descriptors and terms pages. You may read a capped sample of a data file with `sample_data_file` to check structure and quality, but never try to download a whole dataset. Do not copy personal data (names, emails, addresses, ids) into your output.\n- **Provenance.** Every claim you make about a source must be traceable to a tool call (tool name and argument), a URL, a catalog field or a wiki page id.\n- **Unknown stays unknown.** If no source states a licence, owner, refresh cadence, consent or coverage date, record null or \"unknown\" and say so. Never infer one from what is typical.\n- **Guardrails are findings.** A refused host (DOMAIN_NOT_ALLOWLISTED), a timeout, a 401/403, an expired agreement or a restricted table is evidence to record. Do not look for another route to the same data.\n- **Documentation beats catalog metadata when it is more specific or more recent.** When they disagree, record both, with dates.\n- **Be economical.** Use the fewest tool calls that answer the question, and run independent calls in parallel. Stop when you have enough evidence, and finish by calling your submit tool.\n\n\n# Role: Profiler\n\nYou profile **one** candidate source and return a **catalog record**: an auto-generated summary of schema, freshness, ownership, licence, access and documented quality issues, with provenance for every claim.\n\nWhat to gather, by kind:\n- **internal**: `get_catalog_entry` (all fields), then every wiki backlink and related doc with `read_wiki_page`. Record catalog vs wiki disagreements in `quality_notes`, quoting both sides with dates. Internal sources have `licence.name = \"internal\"` and `commercial_use = \"not_applicable\"`.\n- **public_api**: `list_external_register` for the endpoint, then one or two small `call_public_api` probes to check that it responds and which period it covers (probe both ends of the needed windows if coverage is in doubt). Read the provider's terms with `probe_url` on `terms_url` and record the licence and its exact source.\n- **vendor_feed**: read the register entry. Do not try to call it. Record the agreement status and detail in `licence.agreement_status`, and set `access.reachable` to false when credentials are revoked or not issued.\n- **dataset_link** (any URL a human supplied; the link can point anywhere):\n  1. `inspect_dataset_link` on the link. It tells you the link type and gives metadata, licence evidence, files and next steps.\n  2. By link type:\n     - `uci_dataset_page`: read `metadata` (declared flags, notes, variables). If `data_url` exists, `sample_data_file` on it. Otherwise the data is only in an archive: describe the schema from the metadata and say the sample was not possible.\n     - `landing_page` (portals such as Kaggle, Zenodo, data.gov, CKAN or Hugging Face): read `jsonld_datasets` first (licence, dates, coverage, distribution), then `meta_description` and `text_start`. Pick the most specific data file from the distribution or `data_links` and `sample_data_file` it, if its host is allowlisted. If downloads need a login or subscription, set `access.auth_required = true`.\n     - `frictionless_datapackage`: `summarize_datapackage` with a `field_filter` for the use case's geography (e.g. the country code prefix the use case needs). Never sample the large CSVs it lists.\n     - `json_stat`: read the summary (dimensions, time, geo codes, warnings).\n     - `data_file`: the sample profile is already in the result. Find documentation for the file (repository README, parent page) if you can, using `probe_url`.\n     - `json_api`: use the shape and dates found. One more call at most.\n     - `login_wall` / `unreachable` / a refused host: record `access.reachable = false` (or `auth_required = true` for a login wall), say which host or credential would be needed, and stop.\n  3. Licence: use the licence from `inspect_dataset_link` and say where it was found (`found_in`). If none was found, look once on the provider's terms page with `probe_url`. Otherwise record null. Never assume a portal's usual licence.\n  4. Copy `canonical_ref` from `inspect_dataset_link` into the record.\n  5. Put what the **sample** showed in `sample_findings`, naming the column: sentinel values, negative quantities, zero shares, odd value sets (country spellings), date formats, personal-looking columns. A sample's date range is the range of the first rows only: take `temporal.start/end` from the documentation, not from the sample, unless the sample is the whole file.\n  6. Decide what the data **is**: entity, grain, period, geography, population. The Risk Assessor judges fit from this.\n\nField rules:\n- `temporal.start` / `temporal.end` are ISO dates (YYYY-MM-DD) of the **data period**. Use `end = null` only for sources that are still updating. `grain` is one of the schema's values.\n- `access.approx_size_bytes`: the largest file or table size you found stated (descriptor bytes, content-length, row counts x width if stated), else null.\n- `access.reachable = false` if the link itself (or its metadata) could not be reached, the host was refused, or the store cannot be restored. A data file that timed out or is an archive that cannot be sampled does NOT make the source unreachable when its metadata was read; note it in `quality_notes`.\n- `licence.mixed_sources = true` when different fields or files come from upstream providers with different terms.\n- `spatial.code_system`: how places are identified (ISO2, ISO3, free-text country names, Eurostat codes, ...). This decides whether joins will work.\n- `schema.documented`: \"structured\" when fields come with names and types, \"free_text_only\" when they are only described in prose, \"none\" otherwise.\n- At least three `provenance` entries. Put everything you could not establish in `unknowns`.\n",
+ "messages": [
+  {
+   "role": "user",
+   "content": "<use_case_spec>\n{\n \"id\": \"UC1\",\n \"title\": \"Air quality and traffic: can we explain poor-air days and warn clinic patients in time?\",\n \"client\": \"Valdena Civic Health Office (fictional, northern Italy)\",\n \"as_of\": \"2026-10-15\",\n \"geography\": {\n  \"primary\": [\n   \"IT\"\n  ],\n  \"secondary\": []\n },\n \"windows\": [\n  {\n   \"id\": \"prototype\",\n   \"start\": \"2004-03-10\",\n   \"end\": \"2005-04-04\",\n   \"purpose\": \"Build the method on public hourly air-quality readings while the city's own station data is requested.\"\n  },\n  {\n   \"id\": \"production\",\n   \"start\": \"2024-01-01\",\n   \"end\": \"2025-12-31\",\n   \"purpose\": \"Two years of the city's own station, traffic and clinic data for the live warning model.\"\n  }\n ],\n \"needs\": [\n  {\n   \"id\": \"N1\",\n   \"name\": \"Hourly air-pollutant concentrations (for example NO2 or PM2.5)\",\n   \"priority\": \"must\",\n   \"min_grain\": \"hourly\",\n   \"windows\": [\n    \"prototype\",\n    \"production\"\n   ]\n  },\n  {\n   \"id\": \"N2\",\n   \"name\": \"Hourly vehicle traffic near the monitoring stations\",\n   \"priority\": \"must\",\n   \"min_grain\": \"hourly\",\n   \"windows\": [\n    \"production\"\n   ]\n  },\n  {\n   \"id\": \"N3\",\n   \"name\": \"Hourly temperature and humidity\",\n   \"priority\": \"must\",\n   \"min_grain\": \"hourly\",\n   \"windows\": [\n    \"prototype\",\n    \"production\"\n   ]\n  },\n  {\n   \"id\": \"N4\",\n   \"name\": \"Daily respiratory clinic visits, as counts by district\",\n   \"priority\": \"should\",\n   \"min_grain\": \"daily\",\n   \"windows\": [\n    \"production\"\n   ]\n  },\n  {\n   \"id\": \"N5\",\n   \"name\": \"Patient-level clinic visit records\",\n   \"priority\": \"could\",\n   \"min_grain\": \"event\",\n   \"windows\": [\n    \"production\"\n   ]\n  },\n  {\n   \"id\": \"N6\",\n   \"name\": \"National yearly context: deaths linked to PM2.5\",\n   \"priority\": \"could\",\n   \"min_grain\": \"annual\",\n   \"windows\": [\n    \"prototype\",\n    \"production\"\n   ]\n  }\n ]\n}\n</use_case_spec>\n\n<candidate>\n{\n \"source_id\": \"api.open_meteo_archive\",\n \"kind\": \"public_api\",\n \"title\": \"Open-Meteo Historical Weather API (reanalysis)\",\n \"need_ids\": [\n  \"N3\"\n ],\n \"target_windows\": [\n  \"prototype\",\n  \"production\"\n ],\n \"why_relevant\": \"Register entry approved for prototyping and production with open-data status; provides hourly temperature_2m and relative_humidity_2m. Only candidate for N3 in both windows.\",\n \"found_via\": \"list_external_register\",\n \"suspected_issues\": [\n  \"Register default coordinates are Lisbon (38.72, -9.14); must be replaced with a justified Valdena location recorded as an assumption in decisions.md. No source names the client's city.\",\n  \"Reanalysis (modelled), not station observation; may not reflect street-level conditions.\",\n  \"Register does not state archive start date; coverage of 2004-03-10 to 2005-04-04 and 2024-2025 must be confirmed by a short probe.\",\n  \"Register default query uses hourly temperature_2m,shortwave_radiation; humidity must be added to the variable list.\"\n ]\n}\n</candidate>\n\nProfile this one source and call submit_catalog_record."
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "signature": "CAQS5wQKEggTEAEYAjgBQgh0aGlua2luZxIMzpifLorjGkWuddziGgxCw+c2kdnE0YZ1ay4iMN9psLdvc2aLLNrHRzkxBx4E9Yk8MCEuuzZpzbcuYRRou+zztv0Gj34HQ3BKVgk00iqCBGEq9c2PCNDHhC8vfGAPaAkuKvGzME81dkFoHKAR90ewq0eGu07s+CW+YcUUvvM2jM1qjCse+bBxuSs95b6oI+PH52uQLD9gWWz/Xv5Pv6HZPX/Uf7jv+h6Uj4BEuG0Ixe1AgL81f5RYyD5GCEgMaRHGpFWwg7KV48keylga38A+3rg57HdxNFrd3yhUEhdwQmy98Ds+JT36NSrZD/mUZRsmKiLYL/yWHlDrCxKBzRuF3qAgLg9msIpIewuL340AL+ilrYCU+R3UTTPSxtzvm/zQYZv3pkUuiNtfC2P8P+Qaonop1Bcf/lZUrEAj7z3T81uo6YNWxkX4HcA/0baNs33Eq1/7ab/mtcoSfW3kH4tn6tXNT53MH4cCGXJ9br/4cJ/Ugng4RKHhsztoJM3bn8Y7mB2XGngZkDB7qpiyo1rzLuMnyq+53ohCezSw3KMLow+gVEq/Siuc5yDZTI+2+MgEjxUeuasGZyHC0gT01u+c5k3h7bLk8OBIR2U94Mb/+7jmEz96o+1f+FZ8qF4OqEebX+I97sePrm/3Kp6nWFggf2XPIHAEtOml+SgvsPi82RE+EFKRdJcktnJqMEA8aKdPPlZeDohYh6S//m9bsA5Ul083G11fsBTf6/0cV3VCRhaLbOySbeKFyIQ2yIn9/GBYzSeL4B0zdCME7n/mPbjCCbwYAQ==",
+     "thinking": "",
+     "type": "thinking"
+    },
+    {
+     "id": "toolu_bdrk_01PYWpbuB6T891atjYeYshX9",
+     "input": {},
+     "name": "list_external_register",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_bdrk_01ESq37JtDoLqLfa1atuNaih",
+     "input": {
+      "source_id": "api.open_meteo_archive",
+      "query": {
+       "latitude": "45.46",
+       "longitude": "9.19",
+       "start_date": "2004-03-10",
+       "end_date": "2004-03-12",
+       "hourly": "temperature_2m,relative_humidity_2m"
+      }
+     },
+     "name": "call_public_api",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_bdrk_011rgAjR1BZRorxXRHkmNhmF",
+     "input": {
+      "source_id": "api.open_meteo_archive",
+      "query": {
+       "latitude": "45.46",
+       "longitude": "9.19",
+       "start_date": "2024-01-01",
+       "end_date": "2024-01-03",
+       "hourly": "temperature_2m,relative_humidity_2m"
+      }
+     },
+     "name": "call_public_api",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_bdrk_01PYWpbuB6T891atjYeYshX9",
+     "content": "{\"use_case\": \"UC1\", \"sources\": [{\"id\": \"policy.open_data_links\", \"kind\": \"policy\", \"title\": \"Open-data policy for dataset links supplied by analysts\", \"use_cases\": [\"UC1\", \"UC2\"], \"agreement_status\": \"not_required_open_data\", \"approved_purposes\": [\"prototyping\", \"benchmarking\", \"context\"], \"notes\": \"Legal allows publicly available datasets (repositories such as UCI or Zenodo, statistics offices, open-data portals) for prototyping, benchmarking and context, subject to each dataset's own licence as read at its source. Datasets behind a login, with an unknown licence or a non-commercial licence need Legal review before use. Production use of any external dataset needs Legal sign-off.\", \"docs_url\": null, \"terms_url\": null}, {\"id\": \"api.open_meteo_archive\", \"kind\": \"public_api\", \"title\": \"Open-Meteo Historical Weather API (reanalysis)\", \"use_cases\": [\"UC1\", \"UC2\"], \"agreement_status\": \"not_required_open_data\", \"approved_purposes\": [\"prototyping\", \"production\"], \"endpoint\": \"https://archive-api.open-meteo.com/v1/archive\", \"path_params\": [], \"default_query\": {\"latitude\": \"45.44\", \"longitude\": \"10.99\", \"start_date\": \"2014-01-01\", \"end_date\": \"2014-01-03\", \"hourly\": \"temperature_2m,shortwave_radiation\", \"timezone\": \"UTC\"}, \"param_notes\": \"latitude/longitude decimal degrees; start_date/end_date YYYY-MM-DD; hourly or daily variable lists. Keep probe ranges to a few days.\", \"docs_url\": \"https://open-meteo.com/en/docs/historical-weather-api\", \"terms_url\": \"https://open-meteo.com/en/licence\"}, {\"id\": \"api.nager_public_holidays\", \"kind\": \"public_api\", \"title\": \"Nager.Date public holidays API\", \"use_cases\": [\"UC1\", \"UC2\"], \"agreement_status\": \"not_required_open_data\", \"approved_purposes\": [\"prototyping\", \"production\"], \"endpoint\": \"https://date.nager.at/api/v3/PublicHolidays/{year}/{country}\", \"path_params\": [\"year\", \"country\"], \"default_query\": {}, \"param_notes\": \"country is ISO 3166-1 alpha-2 (PT, GB, FR, ...).\", \"docs_url\": \"https://date.nager.at/Api\", \"terms_url\": \"https://github.com/nager/Nager.Date\"}, {\"id\": \"vendor.atmosdata_pro\", \"kind\": \"vendor_feed\", \"title\": \"AtmosData Pro station-grade weather feed (fictional vendor)\", \"use_cases\": [\"UC1\"], \"agreement_status\": \"expired\", \"agreement_detail\": \"Contract AD-2021-114 ran 2022-01-01 to 2025-12-31. Renewal is waiting on Procurement; no signed renewal on file.\", \"approved_purposes\": [], \"endpoint\": \"https://api.atmosdata.example/v2/observations\", \"auth\": \"API key (revoked 2026-01-01)\", \"docs_url\": null, \"terms_url\": null}]}"
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_bdrk_01ESq37JtDoLqLfa1atuNaih",
+     "content": "{\"source_id\": \"api.open_meteo_archive\", \"url\": \"https://archive-api.open-meteo.com/v1/archive?latitude=45.46&longitude=9.19&start_date=2004-03-10&end_date=2004-03-12&hourly=temperature_2m,relative_humidity_2m&timezone=UTC\", \"status\": 200, \"error\": null, \"content_type\": \"application/json; charset=utf-8\", \"bytes\": 2197, \"truncated\": false, \"from_cache\": false, \"dates_found\": {\"min_date\": \"2004-03-10\", \"max_date\": \"2004-03-12\", \"n_dates\": 72}, \"shape\": {\"latitude\": 45.448154, \"longitude\": 9.169279, \"generationtime_ms\": 0.125885009765625, \"utc_offset_seconds\": 0, \"timezone\": \"GMT\", \"timezone_abbreviation\": \"GMT\", \"elevation\": 138.0, \"hourly_units\": {\"time\": \"iso8601\", \"temperature_2m\": \"°C\", \"relative_humidity_2m\": \"%\"}, \"hourly\": {\"time\": [\"2004-03-10T00:00\", \"2004-03-10T01:00\", \"2004-03-10T02:00\", \"… 69 more items (total 72)\"], \"temperature_2m\": [-1.0, -1.0, -1.2, \"… 69 more items (total 72)\"], \"relative_humidity_2m\": [85, 86, 87, \"… 69 more items (total 72)\"]}}}"
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_bdrk_011rgAjR1BZRorxXRHkmNhmF",
+     "content": "{\"source_id\": \"api.open_meteo_archive\", \"url\": \"https://archive-api.open-meteo.com/v1/archive?latitude=45.46&longitude=9.19&start_date=2024-01-01&end_date=2024-01-03&hourly=temperature_2m,relative_humidity_2m&timezone=UTC\", \"status\": 200, \"error\": null, \"content_type\": \"application/json; charset=utf-8\", \"bytes\": 2203, \"truncated\": false, \"from_cache\": false, \"dates_found\": {\"min_date\": \"2024-01-01\", \"max_date\": \"2024-01-03\", \"n_dates\": 72}, \"shape\": {\"latitude\": 45.448154, \"longitude\": 9.169279, \"generationtime_ms\": 0.06270408630371094, \"utc_offset_seconds\": 0, \"timezone\": \"GMT\", \"timezone_abbreviation\": \"GMT\", \"elevation\": 138.0, \"hourly_units\": {\"time\": \"iso8601\", \"temperature_2m\": \"°C\", \"relative_humidity_2m\": \"%\"}, \"hourly\": {\"time\": [\"2024-01-01T00:00\", \"2024-01-01T01:00\", \"2024-01-01T02:00\", \"… 69 more items (total 72)\"], \"temperature_2m\": [5.6, 6.1, 5.0, \"… 69 more items (total 72)\"], \"relative_humidity_2m\": [98, 96, 97, \"… 69 more items (total 72)\"]}}}"
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "signature": "CAQS6wYKEggTEAEYAjgBQgh0aGlua2luZxIMee9ljb3y0HYVwPKXGgyvFoe/gKq6jM9VjRMiMIUngPiXFmG4WCUuOhNlXgcBYIx5QbAbDhA/hMHZ78MMneCVz0klvPZyozqfLvw/jyqGBlHdPdjRd48slRdvD/tWKUBEMXWx1WqGfHLNhU4LyZnjaCWuIygh28b/emxWDMVlvjJYqUJMGGfsh8M9MskuUnOkGQbVRdpvcNFuvlUBcsIQRcN66LHadock6B2sB1MkvrUGQi9LMxkC/RE3ddkUHf3RrYsmJEFOB8WmPthyOofrm9h2/ltwoEti1vCSY1LWH29gslx6VxA+KYz6JLJtKn+RrpYI1kCd0DYY0lnR3s95+KV1TcVfmDOcH8h5IkRILV8/FmSoFROk8hNrwj3p47VUFddchXsweNGE6DcXkQAY0UTRGtIj/sp6UBHiXQgSyUF+o/UA23kc1DbP1Rj1AoD2qCzB0W1CVPAMjN2SKdVJyWtXK1ynojMiZkTcY5mi/N/G7iijSR7aRPXUI+7aroyvSZHsHB3hY+RpIAjcB8lwxGgZQovBmDLcWMV0RwOHr4/ofa7iFbMSviA+NSgzGQD/FqMFxRNNFFrqKTljNp6P4PI99NFkTVO7ybt3wTBu7bgVeWbUTxFz7m72MfB6AS4MMsPlKNuxQifh9HYZOSGD1sI9Eqndk4GMd/MMqsgHHxiOAE+m+PhURi8kbwTwHSr2+SCvsENl+C187IjtzhWNod/AFatGDHvTMtKdr8WLuv7ew/rAAKSIKVblznoOdd6TPWyRWraZ66McIMLMZedViniQ+tlZhqyK2fdARsPHfblyM/LvLmxh+LDcVxxO2L0QSlp9COOa7RuViG0AWxdrIENnEP2vqFkvHSLaYihw2xcM3AUoJJNXY8yc+uw1nG1/eqDkt0Xiffb6NEtCo2l9b/5HjpveckHIDxDY0qmHHKTyI2JqyfqVEJIM8J20Y79bvYob66MLwv5Gnf/XWXT5tyIpvJHDrYq5Ijo7ECmEHfNr31V6yxN98dp35zyA5kvqGskiGUEx1/VyDd5nDzscuswaciQsnhO+XBSF83KJrOeNKQyCOP/0e4KQQ/vXq903i16nznpyLQWW4LEKOuVQS7w4xgPYEkxg+jsGP4IExWXLTO1u/RgB",
+     "thinking": "",
+     "type": "thinking"
+    },
+    {
+     "id": "toolu_bdrk_01SURhRYQM2shSqVEL7Ngwns",
+     "input": {
+      "url": "https://open-meteo.com/en/licence"
+     },
+     "name": "probe_url",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_bdrk_01SURhRYQM2shSqVEL7Ngwns",
+     "content": "{\"url\": \"https://open-meteo.com/en/licence\", \"final_url\": \"https://open-meteo.com/en/licence\", \"status\": 200, \"error\": null, \"content_type\": \"text/html; charset=utf-8\", \"content_length_header\": null, \"last_modified_header\": \"Sun, 15 Nov 2026 21:27:20 GMT\", \"bytes_read\": 40502, \"truncated\": false, \"from_cache\": false, \"format\": \"html\", \"title\": \"🧑‍⚖️ Licence | Open-Meteo.com\", \"text_start\": \"🧑‍⚖️ Licence | Open-Meteo.com Open-Meteo Home Features Pricing API Docs Animations Toggle theme Licence Data Sources Open-Meteo utilises open-data from various national weather services including: Atmospheric, ensemble and wave forecasts from Deutscher Wetterdienst DWD ( CC-BY Licence ) Atmospheric, ensemble and wave forecasts from European Centre for Medium-Range Weather Forecasts ECMWF ( CC-BY Licence ) Atmospheric, ensemble and wave forecasts from NOAA NCEP ( Licence ) Atmospheric and ensemble forecasts from Canadian Meteorological Centre CMC ( Licence ) Atmospheric and wave forecasts from Météo-France ( Licence ) Atmospheric forecasts from Japan Meteorological Agency JMA ( Licence ) Atmospheric forecasts from Norwegian Meteorological Institute ( CC-BY Licence ) Atmospheric forecasts from Chinese Meteorological Administration CMA ( CC-BY Licence ) Atmospheric forecasts from Australian Bureau of Meteorology BOM ( CC-BY Licence ) Atmospheric forecasts from Royal Netherlands Meteorological Institute KNMI ( CC-BY Licence ) Atmospheric forecasts from Danish Meteorological Institute DMI ( CC-BY Licence ) Atmospheric forecasts from UK Met Office ( CC-BY-SA Licence ) Atmospheric forecasts from ItaliaMeteo-ARPAE ( CC-BY Licence ) Atmospheric forecasts from MeteoSwiss ( CC-BY Licence ) Wave forecasts from Copernicus Marine Service ( Licence ) Weather reanalysis, air quality forecasts and elevation data from Copernicus Climate Change Service C3S ( Licence ) Flood forecasts from Global Flood Awareness System GloFAS ( Licence ) Location database from GeoNames ( CC-BY Licence ) Icons from Weather Icons ( SIL OFL 1.1 ) Licence API data are offered under Attribution 4.0 International (CC BY 4.0) You are free to share: copy and redistribute the material in any medium or format and adapt: remix, transform, and build upon the material. Attribution: You must give appropriate credit, provide a link to the licence, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use. You must include a link next to any location Open-Meteo data are displayed, for example: < a href = \\\" https://open-meteo.com/ \\\" > Weather data by Open-Meteo.com </ a > Open-Meteo is open-source Source code is available on GitHub under the GNU Affero General Public Licence Version 3 AGPLv3 or any later version. You can find the licence here . Citation We encourage researchers in the field of meteorology and related disciplines to cite Open-Meteo in their work. By acknowledging Open-Meteo as the source of weather data and forecasts used in their research, researchers contribute to the growing body of knowledge and advancements in the field. Citing Open-Meteo not only gives proper credit to the API but also promotes transparency, reproducibility, and collaboration within the scientific community. Together, let's foster a culture of recognition and support for open-source initiatives like Open-Meteo, ensuring that future researchers can benefit from the valuable resources it provides. Citation: APA MLA Harvard BibTeX Zippenfenig, P. (2023). Open-Meteo.com Weather API [Computer software]. Zenodo. https://doi.org/10.5281/ZENODO.7970649 Open-Meteo Features Pricing About us & Contact Licence Terms & Privacy Weather APIs Weather Forecast API Historical Weather API ECMWF API GFS & RRFS Forecast API Météo-France API DWD ICON API GEM API JMA API Met Norway API Other APIs Ensemble API Climate Change API Marine We\", \"text_chars\": 3693, \"licence_snippets\": [\"🧑‍⚖️ Licence | Open-Meteo.com Open-Meteo Home Features Pricing API Docs Animations Toggle theme Licence Data Sources Open-Meteo utilises open-data from various national weather services including: Atmospheric, ensemble and wave fore\", \"asts from Deutscher Wetterdienst DWD ( CC-BY Licence ) Atmospheric, ensemble and wave forecasts from European Centre for Medium-Range Weather Forecasts ECMWF ( CC-BY Licence ) Atmospheric, ensemble and wave forecasts from NOAA NCEP ( Licence ) Atmospheric and ensemble forecasts from Canadian Meteorological Centre CMC ( Licence ) Atmospheric and wave forecasts from Météo-France ( Lic\", \"Météo-France ( Licence ) Atmospheric forecasts from Japan Meteorological Agency JMA ( Licence ) Atmospheric forecasts from Norwegian Meteorological Institute ( CC-BY Licence ) Atmospheric forecasts from Chinese Meteorological Administration CMA ( CC-BY Licence ) Atmospheric forecasts from Australian Bureau of Meteorology BOM ( CC-BY Licence ) Atmospheric forecasts from Royal Netherl\", \") Atmospheric forecasts from Royal Netherlands Meteorological Institute KNMI ( CC-BY Licence ) Atmospheric forecasts from Danish Meteorological Institute DMI ( CC-BY Licence ) Atmospheric forecasts from UK Met Office ( CC-BY-SA Licence ) Atmospheric forecasts from ItaliaMeteo-ARPAE ( CC-BY Licence ) Atmospheric forecasts from MeteoSwiss ( CC-BY Licence ) Wave forecasts from Copernic\", \" forecasts from Copernicus Marine Service ( Licence ) Weather reanalysis, air quality forecasts and elevation data from Copernicus Climate Change Service C3S ( Licence ) Flood forecasts from Global Flood Awareness System GloFAS ( Licence ) Location database from GeoNames ( CC-BY Licence ) Icons from Weather Icons ( SIL OFL 1.1 ) Licence API data are offered under Attribution 4.0 Inter\", \"ational (CC BY 4.0) You are free to share: copy and redistribute the material in any medium or format and adapt: remix, transform, and build upon the material. Attribution: You must give appropriate credit, provide a link to the licence, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use. You mu\", \"ps://open-meteo.com/ \\\" > Weather data by Open-Meteo.com </ a > Open-Meteo is open-source Source code is available on GitHub under the GNU Affero General Public Licence Version 3 AGPLv3 or any later version. You can find the licence here . Citation We encourage researchers in the field of meteorology and related disciplines to cite Open-Meteo in their work. By acknowledging Open-Meteo \", \"fenig, P. (2023). Open-Meteo.com Weather API [Computer software]. Zenodo. https://doi.org/10.5281/ZENODO.7970649 Open-Meteo Features Pricing About us & Contact Licence Terms & Privacy Weather APIs Weather Forecast API Historical Weather API ECMWF API GFS & RRFS Forecast API Météo-France API DWD ICON API GEM API JMA API Met Norway API Other APIs Ensemble API Climate Change API Marine W\"], \"licence_links\": [\"/en/licence\", \"/en/terms\", \"https://creativecommons.org/licenses/by-sa/4.0/deed.en\", \"https://creativecommons.org/licenses/by/4.0/\", \"https://eccc-msc.github.io/open-data/licence/readme_en/\", \"https://github.com/open-meteo/open-meteo/blob/main/LICENSE\", \"https://marine.copernicus.eu/user-corner/service-commitments-and-licence\", \"https://object-store.os-api.cci2.ecmwf.int/cci2-prod-catalogue/licenses/cems-floods/cems-floods_428a6e1019ec50b3dad9c37a90d630fab139059933a939dd5df620bfcb420cc3.pdf\", \"https://object-store.os-api.cci2.ecmwf.int/cci2-prod-catalogue/licenses/licence-to-use-copernicus-products/licence-to-use-copernicus-products_b4b9451f54cffa16ecef5c912c9cebd6979925a956e3fa677976e0cf198c2c18.pdf\", \"https://open-meteo.com/en/licence\", \"https://openfontlicense.org/\", \"https://www.dwd.de/EN/service/copyright/copyright_node.html\", \"https://www.jma.go.jp/jma/en/copyright.html\"]}"
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "signature": "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",
+     "thinking": "",
+     "type": "thinking"
+    },
+    {
+     "id": "toolu_bdrk_01JB1jYVR742fPab2aYedgzi",
+     "input": {
+      "source_id": "api.open_meteo_archive",
+      "kind": "public_api",
+      "title": "Open-Meteo Historical Weather API (reanalysis)",
+      "summary": "Gridded hourly historical weather reanalysis served by a public REST API, queried by decimal latitude/longitude. Probes returned hourly temperature_2m (°C) and relative_humidity_2m (%) for a point near Milan for 2004-03-10 to 2004-03-12 and for 2024-01-01 to 2024-01-03. The data are modelled reanalysis values on a grid cell (returned elevation 138 m), not station observations, and the grain is hourly, so the source is a candidate for N3 (temperature and humidity) in both windows only if the Valdena location and grid-cell representativeness are accepted.",
+      "schema": {
+       "documented": "structured",
+       "field_count": 3,
+       "fields": [
+        {
+         "name": "time",
+         "description": "Hourly timestamp, ISO8601 (returned as YYYY-MM-DDTHH:MM); timezone set to UTC in probes",
+         "type": "datetime",
+         "unit": "ISO8601",
+         "pii": false
+        },
+        {
+         "name": "temperature_2m",
+         "description": "Air temperature at 2 m",
+         "type": "float",
+         "unit": "°C",
+         "pii": false
+        },
+        {
+         "name": "relative_humidity_2m",
+         "description": "Relative humidity at 2 m",
+         "type": "float",
+         "unit": "%",
+         "pii": false
+        }
+       ],
+       "notes": "Structured JSON response with hourly arrays and hourly_units. Request parameters: latitude, longitude, start_date, end_date, hourly, timezone. Register default_query uses 2014-01-01 to 2014-01-03 and hourly temperature_2m,shortwave_radiation; register default coordinates are 45.44, 10.99 (not Lisbon). Humidity must be added to hourly list. Docs: https://open-meteo.com/en/docs/historical-weather-api"
+      },
+      "temporal": {
+       "start": "2004-03-10",
+       "end": null,
+       "grain": "hourly",
+       "metadata_last_updated": null,
+       "open_ended": true,
+       "refresh_cadence": "unknown"
+      },
+      "spatial": {
+       "coverage": [
+        "IT"
+       ],
+       "code_system": "decimal latitude/longitude (WGS84); response snaps to a grid cell",
+       "notes": "The API accepts any coordinate pair; coverage is not limited to Italy by the API, but only one point near Milan (lat 45.46, lon 9.19; returned grid cell 45.448154, 9.169279) was probed. Valdena location is not stated in any source and has not been set; the register default (45.44, 10.99) is not Lisbon. The candidate's 'Lisbon (38.72, -9.14)' claim is not supported by the register entry."
+      },
+      "ownership": {
+       "owner": null,
+       "publisher": "Open-Meteo.com (provider of the API; upstream reanalysis from Copernicus Climate Change Service C3S per licence page)",
+       "steward": null
+      },
+      "licence": {
+       "name": "CC BY 4.0",
+       "evidence": "API data offered under CC BY 4.0 per https://open-meteo.com/en/licence (probe_url, read 2026). The same page lists upstream sources, including 'Weather reanalysis, air quality forecasts and elevation data from Copernicus Climate Change Service C3S (Licence)', whose terms were not read. Register entry agreement_status 'not_required_open_data'; policy.open_data_links says production use needs Legal sign-off.",
+       "url": "https://open-meteo.com/en/licence",
+       "agreement_status": "not_required_open_data",
+       "attribution_text": "Weather data by Open-Meteo.com (per licence page link requirement); upstream C3S attribution not read",
+       "commercial_use": "yes",
+       "mixed_sources": true
+      },
+      "access": {
+       "method": "rest_api",
+       "auth_required": false,
+       "reachable": true,
+       "classification": "open",
+       "approx_size_bytes": null,
+       "request_process": "Public GET to https://archive-api.open-meteo.com/v1/archive with latitude, longitude, start_date, end_date, hourly. No key. Keep probe ranges short. Production use requires Legal sign-off per policy.open_data_links."
+      },
+      "declared_metadata": {
+       "agreement_status": "not_required_open_data",
+       "approved_purposes": [
+        "prototyping",
+        "production"
+       ],
+       "terms_url": "https://open-meteo.com/en/licence",
+       "docs_url": "https://open-meteo.com/en/docs/historical-weather-api",
+       "register_default_lat_lon": "45.44, 10.99",
+       "register_default_dates": "2014-01-01 to 2014-01-03",
+       "contains_pii": false
+      },
+      "documentation_excerpts": [
+       "API data are offered under Attribution 4.0 International (CC BY 4.0) (https://open-meteo.com/en/licence)",
+       "Weather reanalysis, air quality forecasts and elevation data from Copernicus Climate Change Service C3S (https://open-meteo.com/en/licence)",
+       "latitude/longitude decimal degrees; start_date/end_date YYYY-MM-DD; hourly or daily variable lists. Keep probe ranges to a few days. (list_external_register)"
+      ],
+      "quality_notes": [
+       "Reanalysis (modelled) values on a grid cell, not station observations; representativeness for the client's stations is untested.",
+       "Start date not stated in register or docs; probe confirmed data present at 2004-03-10 to 2004-03-12 and at 2024-01-01 to 2024-01-03. Earliest and latest available dates are not established.",
+       "Register does not state a data-end or update lag; temporal.end recorded as open-ended with refresh cadence unknown.",
+       "Probe returned 72 hourly values per 3-day window with no missing markers and no sentinel values seen in the sampled values (temperature -1.2 to 5.6 °C in the samples, humidity 85-98 %).",
+       "Coordinates: no source names Valdena. The probes used a Milan-area point (45.46, 9.19) only to test coverage; this is not an assumption for Valdena and must not be recorded as one without a justified location in decisions.md.",
+       "Candidate note says the register default is Lisbon (38.72, -9.14); the register default_query actually shows 45.44, 10.99. Candidate note is inconsistent with the register.",
+       "Humidity (relative_humidity_2m) is not in the register default query; it was confirmed available by a probe when requested explicitly.",
+       "Licence is mixed: API output under CC BY 4.0, while the upstream C3S reanalysis licence (linked from the licence page) was not read. Production use requires Legal sign-off per policy.open_data_links."
+      ],
+      "provenance": [
+       {
+        "claim": "Register entry: agreement_status not_required_open_data, approved_purposes prototyping and production, endpoint archive-api.open-meteo.com/v1/archive, default coordinates 45.44/10.99 and default dates 2014-01-01 to 2014-01-03",
+        "evidence": "list_external_register (api.open_meteo_archive)"
+       },
+       {
+        "claim": "Probe 2004-03-10 to 2004-03-12 returned HTTP 200 with 72 hourly values of temperature_2m (°C) and relative_humidity_2m (%), elevation 138 m",
+        "evidence": "call_public_api api.open_meteo_archive, query start_date 2004-03-10 end_date 2004-03-12"
+       },
+       {
+        "claim": "Probe 2024-01-01 to 2024-01-03 returned HTTP 200 with 72 hourly values of the same variables",
+        "evidence": "call_public_api api.open_meteo_archive, query start_date 2024-01-01 end_date 2024-01-03"
+       },
+       {
+        "claim": "API data licence CC BY 4.0; upstream reanalysis from Copernicus C3S listed under separate licence",
+        "evidence": "probe_url https://open-meteo.com/en/licence (last_modified header Sun, 15 Nov 2026)"
+       },
+       {
+        "claim": "Production use of external datasets needs Legal sign-off",
+        "evidence": "list_external_register (policy.open_data_links)"
+       }
+      ],
+      "unknowns": [
+       "Earliest and latest dates available in the archive (only the probed windows were confirmed).",
+       "Update lag and refresh cadence of the reanalysis.",
+       "Valdena coordinates: not stated in any source; no location assumption made here.",
+       "Representativeness of the modelled grid cell for the client's monitoring stations and clinic districts.",
+       "Terms of the upstream Copernicus C3S reanalysis licence (linked, not read).",
+       "Whether Legal has signed off production use (required by policy.open_data_links).",
+       "Owner and steward of the Open-Meteo service within the client organisation: not stated."
+      ],
+      "status": "active",
+      "source_id_check": "api.open_meteo_archive"
+     },
+     "name": "submit_catalog_record",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_bdrk_01JB1jYVR742fPab2aYedgzi",
+     "is_error": true,
+     "content": "Submission rejected. Fix these and call it again:\n- <root>: Additional properties are not allowed ('source_id_check' was unexpected)"
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "id": "toolu_bdrk_018G7tvy68Amy6WLu2CMniSs",
+     "input": {
+      "source_id": "api.open_meteo_archive",
+      "kind": "public_api",
+      "title": "Open-Meteo Historical Weather API (reanalysis)",
+      "summary": "Gridded hourly historical weather reanalysis served by a public REST API, queried by decimal latitude/longitude. Probes returned hourly temperature_2m (°C) and relative_humidity_2m (%) for a point near Milan for 2004-03-10 to 2004-03-12 and for 2024-01-01 to 2024-01-03. The data are modelled reanalysis values on a grid cell (returned elevation 138 m), not station observations, so it is a candidate for N3 (temperature and humidity) in both windows only if the Valdena location and grid-cell representativeness are accepted.",
+      "schema": {
+       "documented": "structured",
+       "field_count": 3,
+       "fields": [
+        {
+         "name": "time",
+         "description": "Hourly timestamp, ISO8601 (returned as YYYY-MM-DDTHH:MM); timezone set to UTC in probes",
+         "type": "datetime",
+         "unit": "ISO8601",
+         "pii": false
+        },
+        {
+         "name": "temperature_2m",
+         "description": "Air temperature at 2 m",
+         "type": "float",
+         "unit": "°C",
+         "pii": false
+        },
+        {
+         "name": "relative_humidity_2m",
+         "description": "Relative humidity at 2 m",
+         "type": "float",
+         "unit": "%",
+         "pii": false
+        }
+       ],
+       "notes": "Structured JSON response with hourly arrays and hourly_units. Request parameters: latitude, longitude, start_date, end_date, hourly, timezone. Register default_query uses 2014-01-01 to 2014-01-03 and hourly temperature_2m,shortwave_radiation; register default coordinates are 45.44, 10.99 (not Lisbon). Humidity must be added to hourly list. Docs: https://open-meteo.com/en/docs/historical-weather-api"
+      },
+      "temporal": {
+       "start": "2004-03-10",
+       "end": null,
+       "grain": "hourly",
+       "metadata_last_updated": null,
+       "open_ended": true,
+       "refresh_cadence": "unknown"
+      },
+      "spatial": {
+       "coverage": [
+        "IT"
+       ],
+       "code_system": "decimal latitude/longitude (WGS84); response snaps to a grid cell",
+       "notes": "The API accepts any coordinate pair; coverage is not limited to Italy by the API, but only one point near Milan (lat 45.46, lon 9.19; returned grid cell 45.448154, 9.169279) was probed. Valdena location is not stated in any source and has not been set; the register default (45.44, 10.99) is not Lisbon. The candidate's 'Lisbon (38.72, -9.14)' claim is not supported by the register entry."
+      },
+      "ownership": {
+       "owner": null,
+       "publisher": "Open-Meteo.com (provider of the API; upstream reanalysis from Copernicus Climate Change Service C3S per licence page)",
+       "steward": null
+      },
+      "licence": {
+       "name": "CC BY 4.0",
+       "evidence": "API data offered under CC BY 4.0 per https://open-meteo.com/en/licence (probe_url, read 2026). The same page lists upstream sources, including 'Weather reanalysis, air quality forecasts and elevation data from Copernicus Climate Change Service C3S (Licence)', whose terms were not read. Register entry agreement_status 'not_required_open_data'; policy.open_data_links says production use needs Legal sign-off.",
+       "url": "https://open-meteo.com/en/licence",
+       "agreement_status": "not_required_open_data",
+       "attribution_text": "Weather data by Open-Meteo.com (per licence page link requirement); upstream C3S attribution not read",
+       "commercial_use": "yes",
+       "mixed_sources": true
+      },
+      "access": {
+       "method": "rest_api",
+       "auth_required": false,
+       "reachable": true,
+       "classification": "open",
+       "approx_size_bytes": null,
+       "request_process": "Public GET to https://archive-api.open-meteo.com/v1/archive with latitude, longitude, start_date, end_date, hourly. No key. Keep probe ranges short. Production use requires Legal sign-off per policy.open_data_links."
+      },
+      "declared_metadata": {
+       "agreement_status": "not_required_open_data",
+       "approved_purposes": [
+        "prototyping",
+        "production"
+       ],
+       "terms_url": "https://open-meteo.com/en/licence",
+       "docs_url": "https://open-meteo.com/en/docs/historical-weather-api",
+       "register_default_lat_lon": "45.44, 10.99",
+       "register_default_dates": "2014-01-01 to 2014-01-03",
+       "contains_pii": false
+      },
+      "documentation_excerpts": [
+       "API data are offered under Attribution 4.0 International (CC BY 4.0) (https://open-meteo.com/en/licence)",
+       "Weather reanalysis, air quality forecasts and elevation data from Copernicus Climate Change Service C3S (https://open-meteo.com/en/licence)",
+       "latitude/longitude decimal degrees; start_date/end_date YYYY-MM-DD; hourly or daily variable lists. Keep probe ranges to a few days. (list_external_register)"
+      ],
+      "quality_notes": [
+       "Reanalysis (modelled) values on a grid cell, not station observations; representativeness for the client's stations is untested.",
+       "Start date not stated in register or docs; probe confirmed data present at 2004-03-10 to 2004-03-12 and at 2024-01-01 to 2024-01-03. Earliest and latest available dates are not established.",
+       "Register does not state a data-end or update lag; temporal.end recorded as open-ended with refresh cadence unknown.",
+       "Probe returned 72 hourly values per 3-day window with no missing markers and no sentinel values seen in the sampled values (temperature -1.2 to 5.6 °C in the samples, humidity 85-98 %).",
+       "Coordinates: no source names Valdena. The probes used a Milan-area point (45.46, 9.19) only to test coverage; this is not an assumption for Valdena and must not be recorded as one without a justified location in decisions.md.",
+       "Candidate note says the register default is Lisbon (38.72, -9.14); the register default_query actually shows 45.44, 10.99. Candidate note is inconsistent with the register.",
+       "Humidity (relative_humidity_2m) is not in the register default query; it was confirmed available by a probe when requested explicitly.",
+       "Licence is mixed: API output under CC BY 4.0, while the upstream C3S reanalysis licence (linked from the licence page) was not read. Production use requires Legal sign-off per policy.open_data_links."
+      ],
+      "provenance": [
+       {
+        "claim": "Register entry: agreement_status not_required_open_data, approved_purposes prototyping and production, endpoint archive-api.open-meteo.com/v1/archive, default coordinates 45.44/10.99 and default dates 2014-01-01 to 2014-01-03",
+        "evidence": "list_external_register (api.open_meteo_archive)"
+       },
+       {
+        "claim": "Probe 2004-03-10 to 2004-03-12 returned HTTP 200 with 72 hourly values of temperature_2m (°C) and relative_humidity_2m (%), elevation 138 m",
+        "evidence": "call_public_api api.open_meteo_archive, query start_date 2004-03-10 end_date 2004-03-12"
+       },
+       {
+        "claim": "Probe 2024-01-01 to 2024-01-03 returned HTTP 200 with 72 hourly values of the same variables",
+        "evidence": "call_public_api api.open_meteo_archive, query start_date 2024-01-01 end_date 2024-01-03"
+       },
+       {
+        "claim": "API data licence CC BY 4.0; upstream reanalysis from Copernicus C3S listed under separate licence",
+        "evidence": "probe_url https://open-meteo.com/en/licence (last_modified header Sun, 15 Nov 2026)"
+       },
+       {
+        "claim": "Production use of external datasets needs Legal sign-off",
+        "evidence": "list_external_register (policy.open_data_links)"
+       }
+      ],
+      "unknowns": [
+       "Earliest and latest dates available in the archive (only the probed windows were confirmed).",
+       "Update lag and refresh cadence of the reanalysis.",
+       "Valdena coordinates: not stated in any source; no location assumption made here.",
+       "Representativeness of the modelled grid cell for the client's monitoring stations and clinic districts.",
+       "Terms of the upstream Copernicus C3S reanalysis licence (linked, not read).",
+       "Whether Legal has signed off production use (required by policy.open_data_links).",
+       "Owner and steward of the Open-Meteo service within the client organisation: not stated."
+      ]
+     },
+     "name": "submit_catalog_record",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_bdrk_018G7tvy68Amy6WLu2CMniSs",
+     "content": "accepted"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,44 @@
+Model: gemini-3.8-flash
+Query: EEA dataset of premature deaths attributable to PM2.5 exposure by country including Italy, annual: exact dataset page URL, years covered and licence.
+
+### 1. Exact Dataset Page URL
+* **EEA Datahub Item Page:**  
+  [https://www.eea.europa.eu/en/datahub/datahubitem-view/49930245-dc33-4c47-93b8-9512f0622ebc](https://www.eea.europa.eu/en/datahub/datahubitem-view/49930245-dc33-4c47-93b8-9512f0622ebc)  
+  *(Dataset / Datahub overview: **[EU SDG 11_52] Premature deaths due to exposure to fine particulate matter (PM2.5)** / **Burden of disease of air pollution (Countries & NUTS)**)*
+
+* **EEA SDI Catalogue & DOI Persistent Resolvers:**  
+  * Country-level dataset DOI: [https://doi.org/10.2909/0ac92bb6-6b55-4ac0-ac5a-5858ccdb294d](https://doi.org/10.2909/0ac92bb6-6b55-4ac0-ac5a-5858ccdb294d)  
+  * Regional (NUTS2 / NUTS3) dataset DOI: [https://doi.org/10.2909/244b7279-955d-4543-8b41-6a2105ce883a](https://doi.org/10.2909/244b7279-955d-4543-8b41-6a2105ce883a)  
+  *(Also mirrored in Eurostat as dataset code **`sdg_11_52`** / **`hlth_cd_iap`**)*.
+
+---
+
+### 2. Years Covered
+* **2005 – 2023** (annual data).  
+  * *Note on continuity:* **2006** is missing from the time series due to the lack of validated European PM₂.₅ spatial concentration maps for that year.  
+  * Previous revisions covered 2005–2020, 2005–2021, and 2005–2022.
+
+---
+
+### 3. Licence
+* **Creative Commons Attribution 4.0 International (CC BY 4.0)**  
+  (Copyright holder: European Environment Agency). Commercial and non-commercial reuse is permitted provided proper attribution is given.
+
+Citations:
+  [1] europa.eu: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFQ_72K2BXIiIAun70-l1zg6JSno1zYw1QJbSgPMAWOCAjd3ZwtCWNsEQy66ccj4RwV8VdBxuF305-vzC7f6WftjXf__5UxE-a92ywfV5AL1VquS46y9-bGh_94gVI6LRGULbS0WEzZ48vYVtH7GdoA3B8ApsPvQgYoT1ohUVFXtGG24Hdk-pSd0TawmrU2Q_tYec_YFpaJTr2wUgkDWyvnkS9b
+       supports: [https://www.eea.europa.eu/en/datahub/datahubitem-view/49930245-dc33-4c47-93b8-9512f0622ebc](https://www.eea.europa.eu/en/datahub/datahubitem-view/49930245-dc33-4c47-93b8-9512f0622ebc)
+  [2] europa.eu: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGghv1zk5mV3UwmJfERFNl6A7_Mdd7XwariWP-XPhSyL6KHF5NnDSjfwqc3uGiA9xeo7lCiAcExbyyYudZZ7EmP0jSF-3NgjAnRGdQfmLivyObDvNP3nwtMbw_0CZgEZFi1wjG6K89Xwywp9Tuwoul6B1AUEqyprHnGwrnHRIf6dDvTVsO0RNELZA_KFt40TakCGJun
+       supports: *(Dataset / Datahub overview: **[EU SDG 11_52] Premature deaths due to exposure to fine particulate matter (PM2.5)** / **Burden of disease of air pollution (Countries & NUTS)**)*
+       supports: **2005 – 2023** (annual data).
+  [3] europa.eu: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFNxV513Fr23bNdzN5-GpaXElRdZyAzW2qMFH4bGjkoUWzUbeegCemuvNX5eIqId6lrLhVmkuXqLj4VNVsxHy4Nr8l0xUXkpaMnhceFsmM7nkaD0sJa4x9t5LPfEOfcW6N_glKukeIZM8oaumngfdFmu-FKnKiCwqtHumxpubJtbFbFhYRWJpjoHzg83fcqq-o7LJL2
+       supports: Country-level dataset DOI: [https://doi.org/10.2909/0ac92bb6-6b55-4ac0-ac5a-5858ccdb294d](https://doi.org/10.2909/0ac92bb6-6b55-4ac0-ac5a-5858ccdb294d)
+       supports: Regional (NUTS2 / NUTS3) dataset DOI: [https://doi.org/10.2909/244b7279-955d-4543-8b41-6a2105ce883a](https://doi.org/10.2909/244b7279-955d-4543-8b41-6a2105ce883a)
+  [4] europa.eu: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEFqY_Vg7fGgA2hOq3ar-KqIkVFMJMCVZ_emZQM0HfaEu6zW4uWsod6f5nj194UTsIZpihFDdO-zmrlVNs7UnIbt5VZI0l_QKrfu6mfLPwh0Y2qBf1cc3Fov3ZUaThNFWwIuPZwLXz6r-q5uI1rEvBEk6Sfsuds7uNvD9ySHHFkzOdt
+       supports: *(Also mirrored in Eurostat as dataset code **`sdg_11_52`** / **`hlth_cd_iap`**)*
+  [5] europa.eu: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEaiUzTauQHEQWmyPekNauLZa63GN9JMobVEXFcjegPN2QPrLRLyMoe-BlCvwRRa8iNOIEcqxduuMUoACo25_OFf_oLttE_ozQpZPU_fUdAhr2_kV0xhP5I8fAsJVlIOKoOtWo0LFhZ7TOFJxsQx644yYeu7zMLQ8j7t_ytxctwpiMwKYT_TqhvkcN71YEDHffBVnTJ7qJbQE0Am8mfLIn1TqknPeE-8RJOTGQw3K-eZ2ETBD1CIhwD095Uk622nQZcylZUcYqQmUlz3JPHmXdK
+       supports: ote on continuity:* **2006** is missing from the time series due to the lack of validated European PM₂.₅ spatial concentration maps for that year.
+  [6] europa.eu: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHVJvKZ3cjnTIzQHo4QyrWFdJEl3eFepp-BTtA9hoOYUtikXfw8pyIsbe32oFDPXBgPB8iX_ChHQoa-AWFzO9zjSE53sHSspUVKn3suwdsZINkniiwwIUC4Pdl2P1iLrgl_8sdbTfGm4m0Evj1ReeJjWH1ehUkWqOd74zdtsPFdq3rpfs9XetPYFjNe6IZam-om5tHeJQ==
+       supports: us revisions covered 2005–2020, 2005–2021, and 2005–2022. --- ###
+  [7] europa.eu: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHPVbTcDUCavYquVr0IGl7KTztB9-coZI1-ejhSha9E8ZuDfApwqO8bFyb8LuvPbeYj2hQqpHD2duDcNEdUawB2MCcvoxB5DWR6pgv2cMQv6kZ2tEckrBciPIhTp59stzqAcJNLwja4rsd20rENgPu1VvRmdTGkUyzuqvPs2G3YEUjQOw4WapVpovKR8D6mQC3pylR-qxCXGYStV0xomiH-rqbK1zHP5OqhSw4-xKn9cHOSW0lVaAOOA1gTX0TIrwkvvBVPn1wda-BaFeueWFhgDA==
+       supports: ommons Attribution 4.0 International (CC BY 4.0)** (Copyri
+       supports: nd non-commercial reuse is permitted provided proper attribution is given.

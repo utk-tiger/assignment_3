@@ -1,0 +1,539 @@
+{
+  "use_case": "UC1",
+  "as_of": "2026-10-15",
+  "generated_at": "2026-11-15T21:32:34Z",
+  "model": "claude-haiku-5-5",
+  "overall_verdict": "not_feasible",
+  "overall_rationale": "The must need N2 (hourly traffic near the monitoring stations) is unmet: the only traffic source has no documented counter-to-station mapping (rule 7), so it cannot be joined to the station data for the production window. N2 is must, so overall verdict is not_feasible. The other must needs are met with conditions: N1 via internal.airq.station_readings (production) and link.uci_360 (prototype, research-only licence, Legal review); N3 via api.open_meteo_archive (both windows, location and Legal sign-off needed) and link.lombardia_6eu4_4tja (prototype temperature only, Lombardy benchmark). N4 (should) is met with conditions via the aggregate clinic table. N5 (could) is unmet because the policy permits only aggregate counts. N6 (could) is partially met by the Eurostat annual national series for 2005 only. Re-assessment of N2 would be needed if the Mobility Office can supply a validated counter-to-station register.",
+  "need_coverage": [
+    {
+      "need_id": "N1",
+      "status": "met_with_conditions",
+      "best_sources": [
+        "link.uci_360",
+        "internal.airq.station_readings"
+      ],
+      "gap": "Prototype served only by one road-level site with research-only licence and -200 sentinels; production depends on Environment Monitoring Unit approval and unverified 2025 continuity of the stations (VR-03 switched off 2024-06-30)."
+    },
+    {
+      "need_id": "N2",
+      "status": "unmet",
+      "best_sources": [
+        "internal.traffic.hourly_counts"
+      ],
+      "gap": "No documented counter-to-station mapping, so hourly traffic near the monitoring stations cannot be joined; source rated not_feasible under rule 7."
+    },
+    {
+      "need_id": "N3",
+      "status": "met_with_conditions",
+      "best_sources": [
+        "api.open_meteo_archive",
+        "link.lombardia_6eu4_4tja_097de4"
+      ],
+      "gap": "Open-Meteo covers temperature and humidity in both windows but is modelled reanalysis at an unset Valdena location with licence sign-off pending; ARPA Lombardia covers temperature only for the prototype window and is a Lombardy benchmark, with the humidity dataset not profiled."
+    },
+    {
+      "need_id": "N4",
+      "status": "met_with_conditions",
+      "best_sources": [
+        "internal.clinic.resp_visits_daily"
+      ],
+      "gap": "Only production window served; diagnosis definition, district code list, Data Protection sign-off and suppression threshold are unconfirmed."
+    },
+    {
+      "need_id": "N5",
+      "status": "unmet",
+      "best_sources": [],
+      "gap": "Clinic policy permits only the daily district aggregate table; no patient-level source is permitted for this purpose."
+    },
+    {
+      "need_id": "N6",
+      "status": "partially_met",
+      "best_sources": [
+        "link.europa_sdg_11_52_099aa6"
+      ],
+      "gap": "Annual national series only covers 2005 for the prototype window (2006 missing) and has no 2024-2025 values; Eurostat terms need Legal confirmation."
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "api.open_meteo_archive",
+      "kind": "public_api",
+      "title": "Open-Meteo Historical Weather API (reanalysis)",
+      "location": null,
+      "canonical_ref": null,
+      "need_ids": [
+        "N3"
+      ],
+      "target_windows": [
+        "prototype",
+        "production"
+      ],
+      "verdict": "feasible_with_conditions",
+      "red_flags": [
+        "INT-REPRESENTATIVENESS",
+        "LIC-ATTRIBUTION",
+        "LIC-MIXED"
+      ],
+      "red_flag_details": [
+        {
+          "code": "LIC-MIXED",
+          "severity": "major",
+          "evidence": "licence.mixed_sources=true; API output under CC BY 4.0 but upstream Copernicus C3S reanalysis licence (linked from https://open-meteo.com/en/licence) was not read.",
+          "raised_by": "rule"
+        },
+        {
+          "code": "LIC-ATTRIBUTION",
+          "severity": "minor",
+          "evidence": "licence.name 'CC BY 4.0'; attribution_text 'Weather data by Open-Meteo.com (upstream C3S attribution not read)'.",
+          "raised_by": "rule"
+        },
+        {
+          "code": "INT-REPRESENTATIVENESS",
+          "severity": "major",
+          "evidence": "quality_notes: 'Reanalysis (modelled) values on a grid cell, not station observations; representativeness for the client's stations is untested.' Valdena coordinates not stated in any source (spatial.notes).",
+          "raised_by": "judgement"
+        }
+      ],
+      "dismissed_rule_flags": [],
+      "conditions": [
+        "Legal confirms the upstream C3S reanalysis terms reachable from https://open-meteo.com/en/licence and gives sign-off for production use (policy.open_data_links) - owner: Legal.",
+        "Record attribution 'Weather data by Open-Meteo.com' plus the C3S attribution in outputs - owner: analytics team.",
+        "Set and justify Valdena coordinates in decisions.md (none is stated in any source; the 45.46/9.19 probe point and register default 45.44/10.99 must not be assumed) and check grid-cell representativeness against internal station readings for 2024 - owner: Environment Monitoring Unit with analytics team.",
+        "Confirm earliest and latest archive dates for both windows before the prototype run (only probed dates 2004-03-10..12 and 2024-01-01..03 are confirmed) - owner: analytics team."
+      ],
+      "who_can_resolve": [
+        "Legal",
+        "Environment Monitoring Unit",
+        "analytics team"
+      ],
+      "rationale": "Rule 6/8: no blocker; two majors (LIC-MIXED, INT-REPRESENTATIVENESS) each have an achievable condition with an owner, so feasible_with_conditions. Serves N3 (must) for both prototype and production windows (probes confirmed data present in both). Candidate note claiming a Lisbon default is contradicted by the register default (45.44, 10.99) and is not used. Agreement status not_required_open_data, so no LIC-AGREEMENT blocker."
+    },
+    {
+      "source_id": "internal.airq.station_readings",
+      "kind": "internal",
+      "title": "City station readings (hourly), NO2 and PM2.5",
+      "location": null,
+      "canonical_ref": null,
+      "need_ids": [
+        "N1"
+      ],
+      "target_windows": [
+        "production"
+      ],
+      "verdict": "feasible_with_conditions",
+      "red_flags": [
+        "ACC-RESTRICTED",
+        "GOV-CATALOG-WIKI-CONFLICT"
+      ],
+      "red_flag_details": [
+        {
+          "code": "ACC-RESTRICTED",
+          "severity": "major",
+          "evidence": "auth_required=true, classification=internal, request_process 'Request to the Environment Monitoring Unit'; approval status and turnaround not stated.",
+          "raised_by": "rule"
+        },
+        {
+          "code": "GOV-CATALOG-WIKI-CONFLICT",
+          "severity": "major",
+          "evidence": "Catalog status 'active', temporal_coverage end null (exported 2026-10-14) vs wiki station_network (last_edited 2024-07-01): 'Station VR-03 was switched off on 2024-06-30' and 'airq.station_readings still lists the network as active'.",
+          "raised_by": "judgement"
+        }
+      ],
+      "dismissed_rule_flags": [],
+      "conditions": [
+        "Environment Monitoring Unit approves the warehouse request and states turnaround - owner: Environment Monitoring Unit.",
+        "Exclude VR-03 readings after 2024-06-30 (treat as no data, not zero) unless the unit confirms otherwise - owner: Environment Monitoring Unit.",
+        "Confirm continuity of the other stations through 2025-12-31 and the station count (4.2M rows cannot be reconciled without it) - owner: Environment Monitoring Unit.",
+        "Obtain station register (locations, types, traffic-counter mapping) - owner: Environment Monitoring Unit; needed for any N2 linkage.",
+        "Profile a sample for sentinel values, negatives and validated vs provisional status before modelling - owner: analytics team."
+      ],
+      "who_can_resolve": [
+        "Environment Monitoring Unit",
+        "analytics team"
+      ],
+      "rationale": "Rule 6/8: no blocker. Covers the production window (2024-01-01 to 2025-12-31) for N1 per catalog from 2023-01-01; does not cover the prototype window, which is served by link.uci_360 and the ARPA dataset instead (COV-PARTIAL-WINDOW not raised here as the rule did not fire on this record). The catalog/wiki status conflict and ACC-RESTRICTED are fixable with named owners, so feasible_with_conditions."
+    },
+    {
+      "source_id": "internal.clinic.resp_visits_daily",
+      "kind": "internal",
+      "title": "Respiratory visits (daily, by district)",
+      "location": null,
+      "canonical_ref": null,
+      "need_ids": [
+        "N4"
+      ],
+      "target_windows": [
+        "production"
+      ],
+      "verdict": "feasible_with_conditions",
+      "red_flags": [
+        "ACC-RESTRICTED",
+        "DQ-UNDOCUMENTED-SCHEMA",
+        "GOV-PURPOSE-LIMITATION"
+      ],
+      "red_flag_details": [
+        {
+          "code": "ACC-RESTRICTED",
+          "severity": "major",
+          "evidence": "auth_required=true, classification=internal; request_process 'Request to Clinical Analytics'; access not tested.",
+          "raised_by": "rule"
+        },
+        {
+          "code": "DQ-UNDOCUMENTED-SCHEMA",
+          "severity": "major",
+          "evidence": "Catalog gives 'no diagnosis or respiratory definition, no district code list, and no units or coding-change notes' (schema.notes); district described only as 'District of residence'.",
+          "raised_by": "judgement"
+        },
+        {
+          "code": "GOV-PURPOSE-LIMITATION",
+          "severity": "major",
+          "evidence": "wiki clinic_data_policy (last_edited 2025-02-01): 'Only daily counts by district (clinic.resp_visits_daily) may be used for this purpose.' Use is within that limit, but no record shows the Data Protection Office signed off warning-model use.",
+          "raised_by": "judgement"
+        }
+      ],
+      "dismissed_rule_flags": [],
+      "conditions": [
+        "Clinical Analytics approves the request and confirms access route - owner: Clinical Analytics.",
+        "Clinical Analytics supplies respiratory diagnosis definition, district code list and boundary history, and states whether counts are by residence or clinic site - owner: Clinical Analytics.",
+        "Data Protection Office confirms in writing that the warning-model use of aggregate daily district counts is within clinic_data_policy, and sets a small-cell suppression threshold (not found in any source) - owner: Data Protection Office.",
+        "Check actual row count, date gaps and refresh consistency since 2022 on a capped sample - owner: analytics team."
+      ],
+      "who_can_resolve": [
+        "Clinical Analytics",
+        "Data Protection Office",
+        "analytics team"
+      ],
+      "rationale": "Rule 6/8: no blocker; the aggregate table contains no PII (contains_pii false) and is the only clinic source the policy permits. Serves N4 (should) for production only; does not cover prototype (none needed there). Majors each have an owner-resolvable condition, so feasible_with_conditions. Not N5: patient-level records are not permitted."
+    },
+    {
+      "source_id": "internal.traffic.hourly_counts",
+      "kind": "internal",
+      "title": "Road traffic counts (hourly)",
+      "location": null,
+      "canonical_ref": null,
+      "need_ids": [
+        "N2"
+      ],
+      "target_windows": [
+        "production"
+      ],
+      "verdict": "not_feasible",
+      "red_flags": [
+        "ACC-RESTRICTED",
+        "GOV-CATALOG-WIKI-CONFLICT",
+        "INT-NO-JOIN-KEY"
+      ],
+      "red_flag_details": [
+        {
+          "code": "INT-NO-JOIN-KEY",
+          "severity": "major",
+          "evidence": "quality_notes: 'No documented mapping from counter_id to monitoring station, road segment or distance; N2 near the monitoring stations criterion cannot be verified'; schema has no station, segment or coordinate field.",
+          "raised_by": "judgement"
+        },
+        {
+          "code": "GOV-CATALOG-WIKI-CONFLICT",
+          "severity": "major",
+          "evidence": "wiki counter_replacement_2024: on 2024-03-18 counts changed from per-direction to both-directions combined; 'The catalog entry for traffic.hourly_counts has no note about this.'",
+          "raised_by": "judgement"
+        },
+        {
+          "code": "ACC-RESTRICTED",
+          "severity": "major",
+          "evidence": "auth_required=true, classification=internal, request_process 'Request to the Mobility Office'; reachable null, not tested.",
+          "raised_by": "rule"
+        }
+      ],
+      "dismissed_rule_flags": [],
+      "conditions": [
+        "If the Mobility Office supplies a validated counter-to-station register with distances, re-assess N2 (the 2024-03-18 change must then be adjusted or the pre/post series split - owner: Mobility Office).",
+        "Clarify timezone of ts_local (documented only as 'local time') before any UTC join - owner: Mobility Office."
+      ],
+      "who_can_resolve": [
+        "Mobility Office"
+      ],
+      "rationale": "Rule 7: the documentation states no mapping exists from counter_id to station, so the only N2 path (hourly traffic near the monitoring stations) cannot be joined. N2 is a must need served only by this source, so it is not_feasible as documented. The counter-replacement change and the access restriction are fixable in their own right but do not rescue the join. Serves production window only."
+    },
+    {
+      "source_id": "link.data_open_air_chicago_hour_aggre_d4970b",
+      "kind": "dataset_link",
+      "title": "Open Air Chicago hourly aggregations (catalog.data.gov link, not reached)",
+      "location": "https://catalog.data.gov/dataset/open-air-chicago-hour-aggregations",
+      "canonical_ref": "catalog.data.gov/dataset/open-air-chicago-hour-aggregations",
+      "need_ids": [
+        "N1"
+      ],
+      "target_windows": [
+        "prototype"
+      ],
+      "verdict": "not_feasible",
+      "red_flags": [
+        "ACC-UNREACHABLE",
+        "COV-GEO-MISMATCH",
+        "LIC-UNKNOWN"
+      ],
+      "red_flag_details": [
+        {
+          "code": "ACC-UNREACHABLE",
+          "severity": "blocker",
+          "evidence": "inspect_dataset_link https://catalog.data.gov/dataset/open-air-chicago-hour-aggregations returned DOMAIN_NOT_ALLOWLISTED; no metadata, file or sample read.",
+          "raised_by": "rule"
+        },
+        {
+          "code": "LIC-UNKNOWN",
+          "severity": "blocker",
+          "evidence": "No licence statement could be read (same DOMAIN_NOT_ALLOWLISTED refusal).",
+          "raised_by": "rule"
+        },
+        {
+          "code": "COV-GEO-MISMATCH",
+          "severity": "major",
+          "evidence": "Coverage inferred from link title as Chicago, US; use case primary geography is IT.",
+          "raised_by": "judgement"
+        }
+      ],
+      "dismissed_rule_flags": [],
+      "conditions": [],
+      "who_can_resolve": [],
+      "rationale": "Rule 1: ACC-UNREACHABLE on a non-allowlisted host (catalog.data.gov) is an unresolvable blocker, recorded as a finding. Also US geography against an IT use case. Not to be retried through another route."
+    },
+    {
+      "source_id": "link.europa_sdg_11_52_099aa6",
+      "kind": "dataset_link",
+      "title": "Eurostat SDG 11.52 – Premature deaths due to exposure to PM2.5, Italy (annual, national)",
+      "location": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sdg_11_52?format=JSON&lang=EN&geo=IT",
+      "canonical_ref": "ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sdg_11_52?format=JSON&geo=IT&lang=EN",
+      "need_ids": [
+        "N6"
+      ],
+      "target_windows": [
+        "prototype",
+        "production"
+      ],
+      "verdict": "feasible_with_conditions",
+      "red_flags": [
+        "COV-PARTIAL-WINDOW",
+        "DQ-METADATA-CONTRADICTION",
+        "DQ-UNDOCUMENTED-SCHEMA",
+        "LIC-UNKNOWN"
+      ],
+      "red_flag_details": [
+        {
+          "code": "LIC-UNKNOWN",
+          "severity": "blocker",
+          "evidence": "No licence found: inspect_dataset_link returned no licence evidence; probe of https://ec.europa.eu/eurostat/about/policies/copyright redirected to EU Login with no licence text; no Eurostat entry in external register.",
+          "raised_by": "rule"
+        },
+        {
+          "code": "COV-PARTIAL-WINDOW",
+          "severity": "major",
+          "evidence": "Table covers 2005-01-01..2023-12-31 with 18 years; prototype overlap is 2005 only; production window 2024-2025 has 0% coverage.",
+          "raised_by": "rule"
+        },
+        {
+          "code": "DQ-UNDOCUMENTED-SCHEMA",
+          "severity": "major",
+          "evidence": "Rate unit (RT) denominator is not stated in the summary; NR and RT values should not be compared without documentation.",
+          "raised_by": "judgement"
+        },
+        {
+          "code": "DQ-METADATA-CONTRADICTION",
+          "severity": "major",
+          "evidence": "declared warnings ['TIME_GAPS']: 2006 absent from the time list (18 values, not 19).",
+          "raised_by": "judgement"
+        }
+      ],
+      "dismissed_rule_flags": [],
+      "conditions": [
+        "Legal confirms the terms at https://ec.europa.eu/eurostat/about/policies/copyright (page exists; was not readable) - owner: Legal.",
+        "Confirm the RT denominator from Eurostat metadata before using the rate unit - owner: analytics team.",
+        "Treat the 2006 gap as missing, not zero - owner: analytics team.",
+        "Use only as national annual context for the prototype window; production has no values - owner: analytics team."
+      ],
+      "who_can_resolve": [
+        "Legal",
+        "analytics team"
+      ],
+      "rationale": "Rule 2: LIC-UNKNOWN is resolvable because the publisher is an official body (Eurostat) and a copyright/terms page exists, so feasible_with_conditions. Rule 4/8: COV-PARTIAL-WINDOW never alone gives not_feasible; the source serves N6 (could, annual national context), which is coarse but acceptable for a could need (rule 3). Covers no production values."
+    },
+    {
+      "source_id": "link.lombardia_6eu4_4tja_097de4",
+      "kind": "dataset_link",
+      "title": "Temperatura fino al 2010 (ARPA Lombardia air temperature, hourly station observations to 2010-12-31)",
+      "location": "https://www.dati.lombardia.it/Ambiente/Temperatura-fino-al-2010/6eu4-4tja",
+      "canonical_ref": "www.dati.lombardia.it/Ambiente/Temperatura-fino-al-2010/6eu4-4tja",
+      "need_ids": [
+        "N3"
+      ],
+      "target_windows": [
+        "prototype"
+      ],
+      "verdict": "feasible_with_conditions",
+      "red_flags": [
+        "COV-GEO-MISMATCH",
+        "FRS-METADATA-DATE-MISLEADING"
+      ],
+      "red_flag_details": [
+        {
+          "code": "COV-GEO-MISMATCH",
+          "severity": "major",
+          "evidence": "spatial.notes: 'Sensors are in Lombardy ... coverage of the client's city is unknown'; the use case does not place Valdena in Lombardy.",
+          "raised_by": "judgement"
+        },
+        {
+          "code": "FRS-METADATA-DATE-MISLEADING",
+          "severity": "minor",
+          "evidence": "declared_metadata.dateModified 2025-05-06 while the series ends 2010-12-31 (landing page). The file is a closed historical series.",
+          "raised_by": "judgement"
+        }
+      ],
+      "dismissed_rule_flags": [],
+      "conditions": [
+        "Treat as a benchmark for the prototype window only; state the Lombardy-not-Valdena assumption in decisions.md - owner: analytics team.",
+        "Verify the series start and coverage of 2004-03-10 to 2005-04-04 on a capped query (candidate's 178-sensor figure is unverified) - owner: analytics team.",
+        "Profile the humidity dataset (Umidità relativa fino al 2010) and station register nf78-nj6b before claiming N3 humidity - owner: analytics team.",
+        "Align timestamps: 'ora solare' standard time, end-of-interval labels, no UTC offset; convert to UTC and shift one hour - owner: analytics team.",
+        "Attribution 'ARPA Lombardia' (CC0 1.0, no attribution required; recorded as informational).",
+        "Production use is not permitted without Legal sign-off (policy.open_data_links) and the source cannot serve production (ends 2010)."
+      ],
+      "who_can_resolve": [
+        "analytics team",
+        "Legal"
+      ],
+      "rationale": "Rule 10: a different region is acceptable for a benchmark, with the assumption stated, so feasible_with_conditions. Serves N3 temperature only for the prototype window (unconfirmed); humidity is not in this record. Candidate note's half-hourly claim is contradicted by the sample (hourly) and is not used. No rule flags raised."
+    },
+    {
+      "source_id": "link.uci_360",
+      "kind": "dataset_link",
+      "title": "UCI 360 Air Quality (gas multisensor array with reference analyser), Italian city, 2004-2005",
+      "location": "https://archive.ics.uci.edu/dataset/360/air+quality",
+      "canonical_ref": "uci:360",
+      "need_ids": [
+        "N1"
+      ],
+      "target_windows": [
+        "prototype"
+      ],
+      "verdict": "feasible_with_conditions",
+      "red_flags": [
+        "COV-GEO-MISMATCH",
+        "DQ-METADATA-CONTRADICTION",
+        "DQ-SENTINEL-VALUES",
+        "FRS-STALE",
+        "INT-REPRESENTATIVENESS",
+        "LIC-ATTRIBUTION",
+        "LIC-NONCOMMERCIAL"
+      ],
+      "red_flag_details": [
+        {
+          "code": "LIC-NONCOMMERCIAL",
+          "severity": "blocker",
+          "evidence": "Licence conflict: UCI page licence CC BY 4.0, but notes.summary says 'This dataset can be used exclusively for research purposes. Commercial purposes are fully excluded.' Usable only for the prototype window.",
+          "raised_by": "judgement"
+        },
+        {
+          "code": "LIC-ATTRIBUTION",
+          "severity": "minor",
+          "evidence": "CC BY 4.0 per UCI page; attribution 'Saverio Vito; cite De Vito et al., Sens. and Act. B, Vol. 129, 2, 2008; DOI 10.24432/C59K5F'.",
+          "raised_by": "rule"
+        },
+        {
+          "code": "DQ-SENTINEL-VALUES",
+          "severity": "major",
+          "evidence": "'Missing values are tagged with -200 value.' Counts: NMHC(GT) 8,443 cells; NOx(GT)/NO2(GT) about 1,640 each; C6H6(GT) has 366 values equal to -200 that pass a naive filter.",
+          "raised_by": "judgement"
+        },
+        {
+          "code": "INT-REPRESENTATIVENESS",
+          "severity": "major",
+          "evidence": "Single road-level site in an unnamed 'significantly polluted area'; reference values from one analyser at one site; sensors uncalibrated (per UCI notes).",
+          "raised_by": "judgement"
+        },
+        {
+          "code": "COV-GEO-MISMATCH",
+          "severity": "major",
+          "evidence": "quality_notes: 'The city is not named ... Location cannot be confirmed from this source, so it cannot be matched to Valdena.'",
+          "raised_by": "judgement"
+        },
+        {
+          "code": "DQ-METADATA-CONTRADICTION",
+          "severity": "major",
+          "evidence": "declared_metadata.has_missing_values='no', missing_values_symbol=null, but documentation says missing values are tagged -200.",
+          "raised_by": "rule"
+        },
+        {
+          "code": "FRS-STALE",
+          "severity": "major",
+          "evidence": "Data ends 2005-04-04; cutoff 2021-10-15.",
+          "raised_by": "rule"
+        }
+      ],
+      "dismissed_rule_flags": [
+        {
+          "code": "FRS-STALE",
+          "reason": "Rule 5: target window 'prototype' (2004-03-10 to 2005-04-04) is itself historical; the source is only proposed for that window, so staleness against as-of 2026-10-15 does not apply."
+        }
+      ],
+      "conditions": [
+        "Legal review of CC BY 4.0 against the research-only / no-commercial note before any use beyond prototyping (owner: Legal); prototype-only use keeps the verdict.",
+        "Recode -200 to missing across all columns, including C6H6(GT), before any statistic is computed - owner: analytics team.",
+        "Use only as a method benchmark for N1 in the prototype window; do not generalise to Valdena (single site) - owner: analytics team.",
+        "Treat the 2004-03 to 2005-02 vs 2005-04 date span and 9,358 vs 9,357 row conflict as a documentation issue; use the data as the guide - owner: analytics team.",
+        "Calibration caveat for the metal-oxide sensor columns; use reference columns (CO(GT), NO2(GT), NOx(GT)) as targets."
+      ],
+      "who_can_resolve": [
+        "Legal",
+        "analytics team"
+      ],
+      "rationale": "Rule 2: the 'research purposes only' note targets only the prototype window of a public-sector, non-commercial benchmark, so Legal review makes it feasible_with_conditions. Rule 5 dismisses FRS-STALE because the prototype window is historical. Majors (sentinels, representativeness, geography, metadata contradiction) each have an achievable condition. Serves N1 for the prototype window only (window fully covered: 2004-03-10 to 2005-04-04). No production coverage."
+    }
+  ],
+  "rule_warnings": [],
+  "dataset_links": [
+    {
+      "source_id": "link.uci_360",
+      "url": "https://archive.ics.uci.edu/dataset/360/air+quality",
+      "canonical_ref": "uci:360",
+      "need_ids": [
+        "N1"
+      ],
+      "target_windows": [
+        "prototype"
+      ]
+    },
+    {
+      "source_id": "link.europa_sdg_11_52_099aa6",
+      "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sdg_11_52?format=JSON&lang=EN&geo=IT",
+      "canonical_ref": "ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sdg_11_52?format=JSON&geo=IT&lang=EN",
+      "need_ids": [
+        "N6"
+      ],
+      "target_windows": [
+        "prototype",
+        "production"
+      ]
+    },
+    {
+      "source_id": "link.data_open_air_chicago_hour_aggre_d4970b",
+      "url": "https://catalog.data.gov/dataset/open-air-chicago-hour-aggregations",
+      "canonical_ref": "catalog.data.gov/dataset/open-air-chicago-hour-aggregations",
+      "need_ids": [
+        "N1"
+      ],
+      "target_windows": [
+        "prototype"
+      ]
+    },
+    {
+      "source_id": "link.lombardia_6eu4_4tja_097de4",
+      "url": "https://www.dati.lombardia.it/Ambiente/Temperatura-fino-al-2010/6eu4-4tja",
+      "canonical_ref": "www.dati.lombardia.it/Ambiente/Temperatura-fino-al-2010/6eu4-4tja",
+      "need_ids": [
+        "N3"
+      ],
+      "target_windows": [
+        "prototype"
+      ]
+    }
+  ]
+}

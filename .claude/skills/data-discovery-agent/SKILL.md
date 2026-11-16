@@ -6,13 +6,13 @@ description: >
   external data sources for a business problem, before any pipeline is built. Works for
   any use case written to the use-case contract (use_cases/<ID>_*.json + brief + internal
   estate). It sets up and checks the agent, frames the use case, runs planning and scouting,
-  suggests external sources for unmet needs (Step 2b), then pauses for human review. It
-  deliberately does NOT cover profiling, risk assessment, the memo or the learner gaps (G1–G7).
-  The learner builds those with Claude directly, and the learner's deliverable includes
-  extending this file with Steps 3–5.
+  suggests external sources for unmet needs (Step 2b), stops at the candidate gate, then
+  profiles and rule-checks every accepted source (Step 3), assesses and drafts the feasibility
+  memo (Step 4), and evaluates and hands off at the human review gate (Step 5). The human
+  decides at every gate; Claude never writes a gate, suggestion or sign-off reason for them.
 ---
 
-# AI-Native Data Discovery: Assignment Runner (Steps 0–2b only)
+# AI-Native Data Discovery: Assignment Runner (Steps 0–5)
 
 You are Claude, running the first steps of **Stack AI Rewire, Assignment: AI-Native Data
 Discovery** in Claude Code, against the learner's copy of this repo. The repo
@@ -20,9 +20,10 @@ contains a multi-agent discovery system (`discovery_agent/`): Planner → Scout 
 wiki, external register) → **candidate gate, where the human adds dataset links (any URL)** →
 Profiler (one per source) → deterministic rules → Risk Assessor → Memo Writer, then a human review gate.
 
-This skill gets a use case ready, checks the tooling, runs **plan + scout**, and suggests external
-sources for the needs that remain unmet (Step 2b). Profiling, red-flag assessment, the feasibility
-memo and the learner gaps are done in a normal Claude Code session, guided by `README.md`.
+This skill gets a use case ready, checks the tooling, runs **plan + scout**, suggests external
+sources for the needs that remain unmet (Step 2b), then profiles the accepted sources, runs the
+deterministic rules and the Risk Assessor, drafts the memo, and evaluates the run for hand-off
+(Steps 3–5). It assumes the tools and rules are complete (gaps G1–G7 closed); Step 3.1 checks that.
 
 The skill is **use-case agnostic**. UC1 (air quality and traffic) and UC2 (ice-cream sales, weather and holidays) ship with
 the repo, but any business problem written to the contract below runs the same way.
@@ -62,8 +63,10 @@ the repo, but any business problem written to the contract below runs the same w
 │   ├── links.json                           <- Step 2 (copy of the prescribed links) and Step 2b (accepted suggestions appended): the ONE links file
 └── outputs/artifacts/step0_checks.md        <- Step 0
 ```
-Everything after `candidates.json` (records/, rule_flags.json, risk_assessment.json,
-discovery_results.json, feasibility_memo.md) is produced later, outside this skill.
+Steps 3–5 add, in `outputs/<ID>/`: `gate_decisions.json` (written by the human), `candidates_final.json`,
+`records/<source_id>.json`, `rule_flags.json`, `risk_assessment.json`, `discovery_results.json`,
+`feasibility_memo.md`, `run_history.jsonl`, `signoff.json` (written by the human); and in
+`outputs/artifacts/`: `decisions.md`, `review_<ID>.md`, `check_<ID>.json`, `pytest_after.txt`.
 
 ---
 
@@ -72,13 +75,16 @@ discovery_results.json, feasibility_memo.md) is produced later, outside this ski
    `pip install -r requirements.txt`.
 2. Check that the gateway variables are **set**, without printing their values:
    `python -c "import os;print({k: bool(os.environ.get(k)) for k in ['ANTHROPIC_BASE_URL','ANTHROPIC_AUTH_TOKEN','ANTHROPIC_MODEL']})"`.
-   If any is `False`, stop and tell the learner which one. Do not ask them to paste the token.
+   If any is `False`, check for an untracked `.env` in the repo root and load it inside each shell command
+   (`set -a; . ./.env; set +a`), never printing it. If they are still missing, stop and tell the learner which one.
+   Do not ask them to paste the token.
 3. Run the offline tests: `python -m pytest tests/ -q`. `tests/test_tools_offline.py` and
-   `tests/test_agent_loop.py` must pass. `tests/test_learner_gaps.py` is **expected to fail** until
-   the learner implements G1, G3, G4, G5 and G6. Report which gap tests fail; do not implement them here.
+   `tests/test_agent_loop.py` must pass. `tests/test_learner_gaps.py` fails until the learner has implemented
+   G1, G3, G4, G5 and G6, and passes in full once they have (52 of 52 in a finished repo). Report which gap tests
+   fail, if any; do not implement them here.
 4. Smoke-test the tools without the LLM:
    - `python -m discovery_agent tool search_internal_catalog '{"query": "<a need from the brief>"}' --use-case <ID>`
-   - `python -m discovery_agent tool inspect_dataset_link '{"url": "https://archive.ics.uci.edu/dataset/360/air+quality"}' --use-case <ID>`
+   - `python -m discovery_agent tool inspect_dataset_link '{"url": "<a link from outputs/<ID>/links.json, or any page on an allowlisted host, e.g. https://archive.ics.uci.edu/dataset/360/air+quality>"}' --use-case <ID>`
    - `python -m discovery_agent tool list_external_register '{}' --use-case <ID>`
    Each must return JSON, not a traceback. A `DOMAIN_NOT_ALLOWLISTED` result is the guardrail
    working, not a bug.
@@ -109,6 +115,10 @@ learner before you change any input.
    `agreement_status`. If the learner has no internal estate, stop and ask. Do not fabricate one.
 4. Validate: `python -m discovery_agent validate-use-case <ID> | tee outputs/<ID>/use_case_validation.txt`.
    Fix every error it reports in the inputs, not in the validator.
+   Then check the register's API defaults for this use case (`list_external_register`): if a `default_query`
+   holds coordinates or a country that are not the use case's geography (for example a default city in another
+   country), ask the learner for the location. Only `latitude`/`longitude` of the weather API's `default_query`
+   may be changed; record the city, the reason and that it is an assumption in `outputs/artifacts/decisions.md`.
 5. Show the learner the needs table (id, name, priority, min_grain, windows) and the windows.
    **Pause** (for a human learner in an interactive session; in a non-interactive run, write the table and stop). Wait for them to confirm or change it. The needs list decides what the agents
    search for and what the rules check, so a wrong need here gives wrong verdicts later.
@@ -127,11 +137,12 @@ learner before you change any input.
    - internal searches that returned nothing and were not rephrased.
 4. Show the learner the `unmet_needs` and the planner's `external_data_hints`. If a need is already met
    by internal or register sources, say so. Then ask: **do you already have dataset links that fill any
-   of these needs?** For UC1, name the three prescribed links in README.md section 4; UC2 has none. Ask whether
-   the learner will use them. Each link needs need ids and windows. If the learner uses them, copy
-   `links/UC1_example_links.json` to `outputs/<ID>/links.json` once, only if that file does not exist yet (for UC2, start from `[]`). Never copy over it: it may already hold accepted suggestions. The Chicago
-   link in README.md section 4 is one the learner accepts on purpose: its refusal is the finding. Claude
-   does not make that decision for the learner. **STOP and wait for the reply.**
+   of these needs?** If README.md section 4 or `links/<ID>_example_links.json` lists prescribed links for this
+   use case, name them and ask whether the learner will use them. Each link needs need ids and windows. If the
+   learner uses them, copy `links/<ID>_example_links.json` to `outputs/<ID>/links.json` once, only if that file
+   does not exist yet; with no links, start from `[]`. Never copy over it: it may already hold accepted
+   suggestions. A prescribed distractor (a link whose host must never be allowlisted) is one the learner accepts
+   on purpose: its refusal is the finding. Claude does not make that decision for the learner. **STOP and wait for the reply.**
    Only then go to Step 2b.
 
 ## Step 2b: Suggest external sources (only for needs still unmet)
@@ -141,10 +152,16 @@ learner before you change any input.
    Once it exists, search with it for up to **five** public datasets that could fill the unmet needs:
    `python scripts/web_search.py "<query>"`. Use the planner's `external_data_hints` as starting queries.
    Each result is a lead from a search model, not a verified source. Only a URL with a citation may be
-   suggested, and each one still needs checking on its publisher's page.
+   suggested, and each one still needs checking on its publisher's page. Gemini citations through the gateway
+   are Google grounding redirect URLs: resolve each one to its publisher URL from the redirect's `Location`
+   header (`curl -sI -m 30 <redirect>`, no body, nothing downloaded) and drop citations that land off-topic.
 2. For each suggestion, show the learner: publisher, exact URL (the dataset or record page, not a search
    page), need ids, coverage **as the page states it** (quote the page; write `"not stated"` if the page
    does not say), and what still needs checking (licence, population, access). Do not download data.
+   The allowlist governs the pipeline agents, not this check: read the publisher page's metadata yourself
+   with one small GET of the HTML page or its catalogue API (`curl -sSL -m 40 <page>`; Socrata
+   `/api/views/<id>.json`, Opendatasoft `/api/explore/v2.1/catalog/datasets/<id>`, CKAN `package_show`), never a
+   data file. If the page cannot be read, write "not read (<reason>)" and ask the learner to open it.
 3. **STOP and wait.** For each suggestion the learner decides `accept`, `reject` or `revise` (with new
    need ids or windows), with a short reason. The learner may also add links they found. Never decide,
    and never write a reason, for the learner. Silence is not acceptance.
@@ -159,14 +176,127 @@ learner before you change any input.
 5. For each accepted link, check its host is on `config/allowlist.json`:
    `python -m discovery_agent tool inspect_dataset_link '{"url": "<link>"}' --use-case <ID>`.
    If a host is refused, **STOP**: the learner decides whether to add it, with a G6 justification in
-   `outputs/artifacts/decisions.md`. Do not add hosts yourself, and do not try an alternate URL. The Chicago host (`catalog.data.gov`) is refused by design: record that refusal as a finding. The Eurostat host waits for G6 in Task 6; re-run the inspection after it is added.
+   `outputs/artifacts/decisions.md`. Do not add hosts yourself, and do not try an alternate URL. A distractor's host is refused by design (in UC1, `catalog.data.gov`): record that refusal as a finding. A host the learner approves under G6 is added as an exact host only; re-run the inspection after it is added (in UC1, `ec.europa.eu` for Eurostat).
 
-**Then stop.** Tell the learner the candidate list and accepted links are ready for review, and give
-them the command for the next stage:
-`python -m discovery_agent run --use-case <ID> --from-stage profile --links-file outputs/<ID>/links.json`
-(the same file as Step 2; it must hold every link the learner has decided on).
-This skill has nothing further to do. Profiling, rules, risk assessment, the memo and the gaps
-happen in a normal session from here, guided by `README.md`.
+**Then stop at the candidate gate.** Tell the learner the candidate list and accepted links are ready, and
+that `outputs/<ID>/gate_decisions.json` must exist (one `accept`/`reject` with a reason of at least 20 characters
+per link in `outputs/<ID>/links.json`, written by the learner) before Step 3. If the use case has no dataset
+links (`links.json` is `[]` or absent), no gate file is needed. Continue with Step 3 only after the learner says so.
+
+---
+
+## Step 3: Profile and rule-check
+1. **Pre-flight (no LLM).** Run `python -m pytest tests/ -q`; every test must pass (tools G1/G3, rules G4,
+   calibration G5, allowlist G6). If `tests/test_learner_gaps.py` fails, stop: profiling with a stubbed tool
+   produces `NOT_IMPLEMENTED` records and wrong verdicts. Never edit that test file.
+2. **Gate check (no LLM).** If `outputs/<ID>/links.json` holds links, confirm `outputs/<ID>/gate_decisions.json`
+   exists and covers every URL exactly. The pipeline enforces it and stops with `Missing …`, `No decision for <url>`
+   or `Reason … is too short` before any model call (`run_summary.json` then shows `llm_calls: 0`). Report the
+   message; never write or shorten a reason for the learner.
+3. **Host check (no LLM).** For every accepted link run
+   `python -m discovery_agent tool inspect_dataset_link '{"url": "<link>"}' --use-case <ID>`. Record the
+   `link_type` it detects (`uci_dataset_page`, `landing_page` with `jsonld_datasets`, `json_stat` with a `summary`,
+   data package, raw file, archive, login wall). A `DOMAIN_NOT_ALLOWLISTED` result means the host needs a G6
+   decision by the learner (exact host only, justified in `outputs/artifacts/decisions.md`) or is a deliberate
+   refusal to keep. Never add a host yourself, never try another route, never retry a refused link more than twice.
+   For a data file it lists, `sample_data_file '{"url": "<file>"}'` shows what the profiler will see in the
+   first ≤2 MB; note when the sample cannot reach the target window (for example a file sorted by sensor).
+4. **Run the profile stage only:**
+   `python -m discovery_agent run --use-case <ID> --from-stage profile --stop-after profile --links-file outputs/<ID>/links.json --no-input`
+   (omit `--links-file` when there are no links). Re-profile one source with `--only <source_id>`. Read the
+   totals line: `http_refused` must equal the number of deliberately refused links, `tool_errors` should be 0 or
+   explained.
+5. **Check every `outputs/<ID>/records/<source_id>.json`** before assessing. For each record verify:
+   - `provenance`: at least one entry per claim area, each naming a tool call, URL, catalog field or wiki page id.
+   - `licence`: `name` plus `evidence`; for a link, the `found_in` of `inspect_dataset_link` (`json-ld`, `link`,
+     `text`) or null. A JSON-stat or JSON API response carries no licence: the profiler must read the publisher's
+     terms page on an allowed host, and the URL it cites must actually resolve (check the trace `http` line).
+     Conflicting statements (a CC link plus "research purposes only" in the notes) must both be recorded.
+     Unknown stays null and is listed in `unknowns`, never inferred.
+   - `temporal.start/end/grain`: compared with the windows in `use_cases/<ID>_*.json`. An open end is
+     "still updating"; a null start means the coverage rule will skip the source, so say where coverage comes from.
+     A "last updated"/`Last-Modified` date is not a data date.
+   - `declared_metadata` vs `documentation_excerpts` and `quality_notes`: sentinels (-200, 0, '?'), "no missing
+     values" claims, unit or definition changes, code changes. Compare the sampler's sentinel counts with the
+     values themselves; the sampler can miss a sentinel on a column.
+   - `access` (`reachable`, `auth_required`, `classification`) and `spatial.coverage` against the use-case geography.
+   - Probe arguments in the trace (`grep '"kind": "http"' outputs/<ID>/trace.jsonl`): API probes must use the
+     register's `default_query` (for example the agreed coordinates) or the record must say why not.
+6. **Read the rules.** Run `python -m discovery_agent run --use-case <ID> --from-stage assess --stop-after assess --no-input`
+   or read `outputs/<ID>/rule_flags.json` after Step 4: `flags` per source with `raised_by: rule:<name>` and
+   `warnings`. `warnings` must be empty (a non-empty list means a rule is skipped as not implemented). Check that
+   the coverage rule fired as expected for each source and window (`COV-OUT-OF-WINDOW`, `COV-PARTIAL-WINDOW`,
+   `FRS-STALE`, `COV-GRAIN-MISMATCH`, `DQ-METADATA-CONTRADICTION`) and note sources it skipped (static grain or
+   null start).
+7. **Fix the agent, not the record.** If a record is wrong (a missed wiki note, a sentinel read as data, a wrong
+   probe location, a licence read from the wrong page), change the prompt, tool description, tool or validator,
+   re-run `--from-stage profile --only <source_id>`, and keep the before file for the G7 evidence. Never hand-edit
+   `records/`, `candidates.json` or results.
+
+## Step 4: Assess and draft the memo
+1. **Calibration in force.** Read the `## Verdict calibration` section of `discovery_agent/prompts/risk_assessor.md`.
+   It maps flag severity (`config/red_flags.json`: blocker, major, minor) and the source's role (`must` = core,
+   `should`/`could` = context) to a verdict, first matching rule wins: unresolvable blockers (refused host,
+   expired agreement, no window overlap, consent gap, policy ban) → `not_feasible`; resolvable licence blockers
+   (terms page or client-register approval; non-commercial terms only for a non-commercial prototype, or a
+   commercial plan the publisher states exists) → `feasible_with_conditions` with Legal/Procurement as owner;
+   per-window judgement; stale data allowed for a historical window; fixable quality issues → conditions; no join
+   path → `not_feasible` **only when the documentation explicitly says no mapping exists** (an undocumented mapping
+   is a condition); minor flags only → `feasible`.
+2. **Run** `python -m discovery_agent run --use-case <ID> --from-stage assess --no-input` (rules + Risk Assessor +
+   Memo Writer on the saved records).
+3. **Review `outputs/<ID>/risk_assessment.json`** source by source:
+   - every rule flag is kept or in `dismissed_rule_flags` with a reason naming the record field (only valid when
+     the rule's input was wrong or not applicable, e.g. `FRS-STALE` for a source serving only a historical window);
+     `ACC-UNREACHABLE`, `LIC-AGREEMENT-NOT-ACTIVE`, `GOV-CONSENT-GAP`, `GOV-PII` are never dismissed;
+   - every `rationale` names the calibration rule that decided it, and every quoted "the documentation states …"
+     is actually in the record or wiki (open the page);
+   - every `feasible_with_conditions` has conditions with an owner; every `not_feasible` names its blocker;
+   - `need_coverage`: each `must` need is `met`/`met_with_conditions` or explains why not; the overall verdict
+     follows the rule in the prompt (any unmet must need → `not_feasible`).
+4. **Measure calibration changes.** When you change the calibration, re-run `--from-stage assess` on the same
+   records (use `--out <scratch dir>` with a copy of `search_plan.json`, `candidates*.json` and `records/` for a
+   "before" run so `outputs/<ID>/` is not overwritten) and record source: before → after, and why, in
+   `outputs/artifacts/decisions.md` (G5). Expect some run-to-run variation (for example a dismissal applied in one
+   run and not the next); report it.
+5. **Check the memo** `outputs/<ID>/feasibility_memo.md`: the seven required sections in order (see
+   `discovery_agent/prompts/memo_writer.md`), the human review gate block at the end, provenance on every claim,
+   no stale statements (for example an "unset location" that `decisions.md` has since fixed), blockers on sources
+   not rejected listed under the gate block.
+6. **STOP at the human review gate.** Show the learner: overall verdict, need coverage table, verdict per source,
+   blockers, and the agent mistakes you found. The learner decides the sign-off.
+
+## Step 5: Evaluate and hand off
+1. **Trace checks** on `outputs/<ID>/trace.jsonl` (no LLM):
+   - refusals: every `http` line with an error names the host; refused hosts = the deliberate ones only, each
+     tried at most twice (`python -m discovery_agent check <ID>` reports `refused_hosts` and `unreachable_links`);
+   - no call to a source with an expired agreement or a login wall (`grep` its host);
+   - request count under `http.max_requests_per_run` in `config/settings.json` (never raise it);
+   - model usage: `llm_calls`, input/output tokens per stage from `outputs/<ID>/run_history.jsonl`;
+   - failed submits (`"kind": "submit", "ok": false`) and turns that hit `max_tokens`, as G7 leads.
+2. **One agent failure, fixed at its cause (G7).** Pick a real mistake from a transcript (`outputs/<ID>/transcripts/<agent>.json`,
+   message index) or trace line. Copy the "before" files to `outputs/artifacts/` first, fix the prompt, tool
+   description, tool, rule or validator, run `python -m pytest tests/ -q`, re-run from the affected stage, and
+   record in `decisions.md`: symptom, evidence (file + line/turn), root cause, fix (file + diff summary), re-run
+   command, measured before/after (verdicts, need coverage, flags, turns, tokens), the project decision it could
+   change, and one related source or test re-checked to show the fix does not over-correct.
+3. **Human sign-off.** The learner writes `outputs/<ID>/signoff.json` from `outputs/artifacts/_TEMPLATE_signoff.json`
+   (verdict `proceed`, `proceed_with_conditions` or `stop`; conditions with `text`, `owner`, `due`; at least one
+   agreement or override with a reason; `traced_conclusion` = a `source_id` in `discovery_results.json`, a dotted
+   field that exists in its record, and `could_change_if` ≥ 20 characters) and `outputs/artifacts/review_<ID>.md`
+   (agreements, overrides with evidence, a verdict per dataset link, the gate decision, one traced conclusion).
+   Help by preparing a fact sheet of memo claims against record fields and trace lines; never write their verdict
+   or reasons unless they explicitly delegate it, and then say so in both files.
+4. **Self-check until clean:** `python -m discovery_agent check <ID> > outputs/artifacts/check_<ID>.json`; it must
+   list `"problems": []`. It checks completeness and consistency, not whether the verdicts are right.
+5. **Evidence in `outputs/artifacts/`:** `step0_checks.md`, `decisions.md` (Step 2b suggestions, G1/G3 edge
+   cases, G4–G5 feasibility case, G5 before/after, G6 hosts and non-hosts, G7, gate decisions, any permitted config
+   change), `review_<ID>.md`, `check_<ID>.json`, `pytest_before.txt`, `pytest_after.txt`
+   (`python -m pytest tests/ -q | tee outputs/artifacts/pytest_after.txt`), `walkthrough.md`. Keep `outputs/<ID>/`
+   with traces and transcripts. Before hand-off, search the repo for the token value (it must appear nowhere but
+   the untracked `.env`) and for email-like strings in outputs.
+6. **Hand off.** Give the learner: the overall verdict per use case, the open conditions with owners, the agent
+   failure fixed, and what remains a human decision.
 
 ---
 
@@ -187,22 +317,9 @@ happen in a normal session from here, guided by `README.md`.
 
 ---
 
-## The other deliverable: extend this file
-Once the learner has worked with you directly (not through this skill) to run the remaining
-stages, close gaps G1–G7 and review the memo, part of what they submit is an **updated version of
-this file** with:
-- **Step 3: Profile and rule-check:** running `--from-stage profile`, what to check in each
-  `outputs/<ID>/records/*.json` (provenance count, licence evidence and `found_in`, temporal and
-  grain fields, `sample_findings` against the documentation, unknowns), how dataset links of
-  different types are handled, and how to read `rule_flags.json` and rule warnings.
-- **Step 4: Assess and draft the memo:** verdict calibration (the rules they wrote for G5),
-  dismissed-flag review, the memo's seven required sections, and the human review gate.
-- **Step 5: Evaluate and hand off:** `python -m discovery_agent check <ID>`, the trace checks
-  they ran (guardrail refusals, request counts, token totals), the before/after evidence of one
-  agent fix (G7), and what goes in `outputs/artifacts/`.
-
-Write the new steps the way Steps 0–2 are written: concrete, imperative, naming exact files,
-commands and checks. The test: someone else gives the updated skill to a fresh Claude session
-with a **different use case** (a new `use_cases/<ID>_*.json`, brief and internal estate) and gets
-a comparable result. If a step only works for UC1 or UC2, or is too vague to act on, revise it.
-If asked to help write those steps, describe what the learner actually did, not a generic template.
+## Reusing this skill on a new use case
+Replace only the inputs: `use_cases/<ID>_*.json` and brief, `internal/<ID>_<client>/` (catalog export and wiki),
+register entries in `config/external_sources_register.json` (with the new use-case id), the dataset links and
+their gate decisions, exact allowlist hosts for those links (G6), and any permitted location defaults (only
+latitude/longitude of the weather API's `default_query`, logged in `decisions.md`). Regenerate
+`scripts/web_search.py` from the README prompt if it is missing. Steps 0–5 do not change.
